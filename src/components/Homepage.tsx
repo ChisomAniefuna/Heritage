@@ -78,7 +78,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-purple-600 rounded-lg">
+              <div className="flex items-center justify-center w-10 h-10 bg-purple-700 rounded-lg">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -86,21 +86,21 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
+              <button className="text-slate-700 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Features
               </button>
               <button 
                 onClick={onViewPricing}
-                className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors"
+                className="text-slate-700 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors"
               >
                 Pricing
               </button>
-              <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
+              <button className="text-slate-700 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Security
               </button>
               <button
                 onClick={onLogin}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors text-sm font-medium"
               >
                 Sign In
               </button>
@@ -114,15 +114,15 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center mb-8">
-              <div className="flex items-center justify-center w-20 h-20 bg-purple-600 rounded-2xl">
+              <div className="flex items-center justify-center w-20 h-20 bg-purple-700 rounded-2xl">
                 <Shield className="w-10 h-10 text-white" />
               </div>
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Secure Your Family's
-              <span className="block text-purple-700">Digital Heritage</span>
+              <span className="block text-purple-800">Digital Heritage</span>
             </h1>
-            <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-slate-700 mb-8 max-w-3xl mx-auto leading-relaxed">
               Professional digital inheritance management with comprehensive asset tracking, secure document storage, 
               and AI-powered personalized messaging for your loved ones.
             </p>
@@ -131,34 +131,34 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
                 <Wallet className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-slate-700">Asset Management</span>
+                <span className="text-sm font-medium text-slate-800">Asset Management</span>
               </div>
               <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
                 <Shield className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-slate-700">Bank-Level Security</span>
+                <span className="text-sm font-medium text-slate-800">Bank-Level Security</span>
               </div>
               <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-                <User className="w-4 h-4 text-purple-600" />
-                <span className="text-sm font-medium text-slate-700">Avatar Video Message</span>
+                <User className="w-4 h-4 text-purple-700" />
+                <span className="text-sm font-medium text-slate-800">Avatar Video Message</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={onLogin}
-                className="bg-purple-600 text-white px-8 py-4 rounded-lg hover:bg-purple-700 transition-all duration-200 text-lg font-semibold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="bg-purple-700 text-white px-8 py-4 rounded-lg hover:bg-purple-800 transition-all duration-200 text-lg font-semibold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <span>Start Free Forever</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button 
                 onClick={onViewPricing}
-                className="border-2 border-purple-300 text-purple-700 px-8 py-4 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 text-lg font-semibold"
+                className="border-2 border-purple-700 text-purple-800 px-8 py-4 rounded-lg hover:border-purple-800 hover:bg-purple-50 transition-all duration-200 text-lg font-semibold"
               >
                 View Pricing
               </button>
             </div>
-            <p className="text-sm text-slate-500 mt-4">
+            <p className="text-sm text-slate-600 mt-4">
               Start with 3 free assets • No credit card required • Upgrade anytime
             </p>
           </div>
@@ -172,7 +172,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
               Complete Digital Inheritance Solution
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto">
               Professional-grade asset management enhanced with cutting-edge AI technology for personalized family communication.
             </p>
           </div>
@@ -181,11 +181,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               const Icon = feature.icon;
               return (
                 <div key={index} className="bg-purple-50 rounded-xl p-6 hover:bg-purple-100 transition-colors duration-200">
-                  <div className="flex items-center justify-center w-12 h-12 bg-purple-600 rounded-lg mb-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-purple-700 rounded-lg mb-4">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-3">{feature.title}</h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">{feature.description}</p>
+                  <p className="text-slate-700 leading-relaxed text-sm">{feature.description}</p>
                 </div>
               );
             })}
@@ -201,7 +201,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">
                 Enhanced with AI-Powered Personal Messages
               </h2>
-              <p className="text-xl text-slate-600">
+              <p className="text-xl text-slate-700">
                 Beyond traditional asset management, Heritage Vault lets you create personalized voice and video messages 
                 that provide comfort and guidance to your loved ones when they need it most.
               </p>
@@ -209,11 +209,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               <div className="space-y-4">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Mic className="w-5 h-5 text-purple-600" />
+                    <Mic className="w-5 h-5 text-purple-700" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900">AI Voice Messages</h3>
-                    <p className="text-slate-600 text-sm">Generate unlimited personalized audio messages for each asset and beneficiary using your voice.</p>
+                    <p className="text-slate-700 text-sm">Generate unlimited personalized audio messages for each asset and beneficiary using your voice.</p>
                   </div>
                 </div>
 
@@ -223,7 +223,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900">Avatar Video Messages</h3>
-                    <p className="text-slate-600 text-sm">Create lifelike video messages that look and sound like you, providing personal guidance.</p>
+                    <p className="text-slate-700 text-sm">Create lifelike video messages that look and sound like you, providing personal guidance.</p>
                   </div>
                 </div>
 
@@ -233,7 +233,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900">Voice-Guided Asset Entry</h3>
-                    <p className="text-slate-600 text-sm">Use voice commands to quickly add and organize your assets with natural language processing.</p>
+                    <p className="text-slate-700 text-sm">Use voice commands to quickly add and organize your assets with natural language processing.</p>
                   </div>
                 </div>
               </div>
@@ -244,28 +244,28 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-4 mb-4">
                     <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Mic className="w-6 h-6 text-purple-600" />
+                      <Mic className="w-6 h-6 text-purple-700" />
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                       <User className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
-                  <p className="text-slate-600 font-medium">AI-Enhanced Asset Management</p>
-                  <p className="text-sm text-slate-500">Professional tools with personal touch</p>
+                  <p className="text-slate-700 font-medium">AI-Enhanced Asset Management</p>
+                  <p className="text-sm text-slate-600">Professional tools with personal touch</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Asset tracking & organization</span>
+                  <span className="text-sm text-slate-800">Asset tracking & organization</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Secure document storage</span>
+                  <span className="text-sm text-slate-800">Secure document storage</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm text-slate-700">Personalized AI messages</span>
+                  <span className="text-sm text-slate-800">Personalized AI messages</span>
                 </div>
               </div>
             </div>
@@ -280,44 +280,44 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
               Simple Steps to Secure Your Heritage
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto">
               Professional estate planning made simple with modern technology and personal touches.
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-700 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
                 1
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-3">Inventory Your Assets</h3>
-              <p className="text-slate-600">
+              <p className="text-slate-700">
                 Add your financial accounts, property, digital assets, and important documents using voice-guided entry or traditional forms.
               </p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-700 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
                 2
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-3">Designate Beneficiaries</h3>
-              <p className="text-slate-600">
+              <p className="text-slate-700">
                 Add your loved ones and specify who should receive what, with detailed instructions and conditional access rules.
               </p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-700 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
                 3
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-3">Create Personal Messages</h3>
-              <p className="text-slate-600">
+              <p className="text-slate-700">
                 Record voice messages and create AI avatar videos to provide personal guidance and comfort to your beneficiaries.
               </p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-700 rounded-full text-white text-2xl font-bold mb-6 mx-auto">
                 4
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-3">Secure & Automate</h3>
-              <p className="text-slate-600">
+              <p className="text-slate-700">
                 Set access controls, time delays, and automated notifications to ensure everything happens according to your wishes.
               </p>
             </div>
@@ -331,7 +331,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
           <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+          <p className="text-xl text-slate-700 mb-8 leading-relaxed">
             Start free with 3 assets and 1 next of kin. Upgrade to Pro for unlimited storage and AI features, 
             or choose our lifetime plan for one-time payment convenience.
           </p>
@@ -341,26 +341,26 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
             <div className="bg-white rounded-lg p-6 border border-slate-200">
               <h3 className="font-semibold text-slate-900 mb-2">Free Forever</h3>
               <p className="text-2xl font-bold text-slate-900 mb-2">$0</p>
-              <p className="text-sm text-slate-600">3 assets • 1 next of kin</p>
+              <p className="text-sm text-slate-700">3 assets • 1 next of kin</p>
             </div>
-            <div className="bg-white rounded-lg p-6 border-2 border-purple-600 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+            <div className="bg-white rounded-lg p-6 border-2 border-purple-700 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-700 text-white px-3 py-1 rounded-full text-xs font-medium">
                 Most Popular
               </div>
               <h3 className="font-semibold text-slate-900 mb-2">Pro</h3>
-              <p className="text-2xl font-bold text-slate-900 mb-2">$12<span className="text-sm text-slate-600">/month</span></p>
-              <p className="text-sm text-slate-600">Unlimited • AI features</p>
+              <p className="text-2xl font-bold text-slate-900 mb-2">$12<span className="text-sm text-slate-700">/month</span></p>
+              <p className="text-sm text-slate-700">Unlimited • AI features</p>
             </div>
             <div className="bg-white rounded-lg p-6 border border-slate-200">
               <h3 className="font-semibold text-slate-900 mb-2">Forever</h3>
-              <p className="text-2xl font-bold text-slate-900 mb-2">$89<span className="text-sm text-slate-600"> one-time</span></p>
-              <p className="text-sm text-slate-600">Lifetime access</p>
+              <p className="text-2xl font-bold text-slate-900 mb-2">$89<span className="text-sm text-slate-700"> one-time</span></p>
+              <p className="text-sm text-slate-700">Lifetime access</p>
             </div>
           </div>
 
           <button
             onClick={onViewPricing}
-            className="bg-purple-600 text-white px-8 py-4 rounded-lg hover:bg-purple-700 transition-all duration-200 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="bg-purple-700 text-white px-8 py-4 rounded-lg hover:bg-purple-800 transition-all duration-200 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             View All Plans & Features
           </button>
@@ -374,7 +374,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
               Trusted by Professionals and Families
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto">
               See what estate planning professionals and families are saying about Heritage Vault's comprehensive approach.
             </p>
           </div>
@@ -386,10 +386,10 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-slate-700 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
+                <p className="text-slate-800 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
                 <div>
                   <p className="font-semibold text-slate-900">{testimonial.name}</p>
-                  <p className="text-slate-600 text-sm">{testimonial.role}</p>
+                  <p className="text-slate-700 text-sm">{testimonial.role}</p>
                 </div>
               </div>
             ))}
@@ -398,7 +398,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-purple-600">
+      <section className="py-20 bg-purple-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
             Start Protecting Your Family's Future Today
@@ -410,7 +410,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <button
               onClick={onLogin}
-              className="bg-white text-purple-600 px-8 py-4 rounded-lg hover:bg-purple-50 transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="bg-white text-purple-800 px-8 py-4 rounded-lg hover:bg-purple-50 transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               <span>Start Free Forever</span>
               <ArrowRight className="w-5 h-5" />
@@ -426,13 +426,13 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-purple-800 text-purple-100 py-12">
+      <footer className="bg-purple-900 text-purple-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg">
-                  <Shield className="w-5 h-5 text-purple-600" />
+                  <Shield className="w-5 h-5 text-purple-700" />
                 </div>
                 <span className="text-white font-bold">Heritage Vault</span>
               </div>
@@ -468,7 +468,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               </ul>
             </div>
           </div>
-          <div className="border-t border-purple-700 mt-8 pt-8 text-center text-sm">
+          <div className="border-t border-purple-800 mt-8 pt-8 text-center text-sm">
             <p>&copy; 2024 Heritage Vault. All rights reserved.</p>
           </div>
         </div>

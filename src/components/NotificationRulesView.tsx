@@ -111,7 +111,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
                       type="checkbox"
                       checked={formData.recipients.includes(contact.name)}
                       onChange={(e) => handleRecipientChange(contact.name, e.target.checked)}
-                      className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      className="rounded border-slate-300 text-purple-700 focus:ring-purple-500"
                     />
                     <span className="text-sm text-slate-700">{contact.name}</span>
                     <span className="text-xs text-slate-500">({contact.email})</span>
@@ -155,7 +155,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
                 type="checkbox"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                className="rounded border-slate-300 text-purple-700 focus:ring-purple-500"
               />
               <label className="text-sm text-slate-700">
                 Active (rule will trigger automatically)
@@ -172,7 +172,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors"
               >
                 {rule ? 'Update' : 'Create'} Rule
               </button>
@@ -259,7 +259,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
           <span>{rule.isActive ? 'Deactivate' : 'Activate'}</span>
         </button>
         
-        <button className="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors">
+        <button className="px-3 py-1 bg-purple-700 text-white text-sm rounded-lg hover:bg-purple-800 transition-colors">
           Test Send
         </button>
       </div>
@@ -275,7 +275,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          className="flex items-center space-x-2 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
         >
           <Plus className="w-4 h-4" />
           <span>Add Rule</span>
@@ -300,7 +300,7 @@ const NotificationRulesView: React.FC<NotificationRulesViewProps> = ({
           </p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
           >
             Create Your First Rule
           </button>

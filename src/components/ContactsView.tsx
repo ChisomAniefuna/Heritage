@@ -27,7 +27,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
             contact.isPrimaryBeneficiary ? 'bg-purple-100' : 'bg-slate-100'
           }`}>
             <Users className={`w-5 h-5 ${
-              contact.isPrimaryBeneficiary ? 'text-purple-600' : 'text-slate-600'
+              contact.isPrimaryBeneficiary ? 'text-purple-700' : 'text-slate-600'
             }`} />
           </div>
           <div>
@@ -71,7 +71,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
           <h2 className="text-2xl font-bold text-slate-900">Contacts</h2>
           <p className="text-slate-600 mt-1">Manage beneficiaries and important contacts</p>
         </div>
-        <button className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+        <button className="flex items-center space-x-2 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors">
           <Plus className="w-4 h-4" />
           <span>Add Contact</span>
         </button>
@@ -130,7 +130,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
               : 'Get started by adding your first contact'}
           </p>
           {!searchTerm && (
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+            <button className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors">
               Add Your First Contact
             </button>
           )}

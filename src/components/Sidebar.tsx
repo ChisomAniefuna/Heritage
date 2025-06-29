@@ -26,8 +26,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
                 onClick={() => setCurrentView(id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
                   currentView === id
-                    ? 'bg-purple-600 text-white'
-                    : 'text-slate-700 hover:bg-purple-50 hover:text-purple-700'
+                    ? 'bg-purple-700 text-white'
+                    : 'text-slate-700 hover:bg-purple-50 hover:text-purple-800'
                 }`}
               >
                 <Icon className="w-5 h-5" />

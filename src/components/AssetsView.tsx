@@ -86,7 +86,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          className="flex items-center space-x-2 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
         >
           <Plus className="w-4 h-4" />
           <span>Add Asset</span>
@@ -116,8 +116,8 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     selectedCategory === category.id
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-purple-100 hover:text-purple-700'
+                      ? 'bg-purple-700 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-purple-100 hover:text-purple-800'
                   }`}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
@@ -157,7 +157,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
           {!searchTerm && selectedCategory === 'all' && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
             >
               Add Your First Asset
             </button>

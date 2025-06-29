@@ -10,7 +10,7 @@ const Header: React.FC<HeaderProps> = ({ onGoHome }) => {
     <header className="bg-white border-b border-slate-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-purple-600 rounded-lg">
+          <div className="flex items-center justify-center w-10 h-10 bg-purple-700 rounded-lg">
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ onGoHome }) => {
               <p className="text-sm font-medium text-slate-900">John Doe</p>
               <p className="text-xs text-slate-500">Account Owner</p>
             </div>
-            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-white" />
             </div>
           </div>
