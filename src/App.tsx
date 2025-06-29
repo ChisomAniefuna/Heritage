@@ -8,10 +8,11 @@ import DocumentsView from './components/DocumentsView';
 import InheritanceEventsView from './components/InheritanceEventsView';
 import NotificationRulesView from './components/NotificationRulesView';
 import Homepage from './components/Homepage';
+import PricingPage from './components/PricingPage';
 import { Asset, Contact, Document, InheritanceEvent, NotificationRule } from './types';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app'>('homepage');
   const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('dashboard');
   
   const [assets, setAssets] = useState<Asset[]>([
@@ -262,9 +263,22 @@ function App() {
     setNotificationRules(rules => rules.filter(rule => rule.id !== ruleId));
   };
 
+  const handleLogin = () => {
+    setCurrentPage('app');
+    setCurrentView('dashboard');
+  };
+
   const handleGoHome = () => {
-    setIsLoggedIn(false);
-    setCurrentView('dashboard'); // Reset to dashboard view
+    setCurrentPage('homepage');
+    setCurrentView('dashboard');
+  };
+
+  const handleViewPricing = () => {
+    setCurrentPage('pricing');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('homepage');
   };
 
   const renderCurrentView = () => {
@@ -300,8 +314,12 @@ function App() {
     }
   };
 
-  if (!isLoggedIn) {
-    return <Homepage onLogin={() => setIsLoggedIn(true)} />;
+  if (currentPage === 'homepage') {
+    return <Homepage onLogin={handleLogin} onViewPricing={handleViewPricing} />;
+  }
+
+  if (currentPage === 'pricing') {
+    return <PricingPage onBack={handleBackToHome} onLogin={handleLogin} />;
   }
 
   return (

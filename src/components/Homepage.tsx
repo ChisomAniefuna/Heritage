@@ -1,11 +1,12 @@
 import React from 'react';
-import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic, Crown, Zap, Gift, Infinity, Globe } from 'lucide-react';
+import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic } from 'lucide-react';
 
 interface HomepageProps {
   onLogin: () => void;
+  onViewPricing: () => void;
 }
 
-const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
+const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
   const features = [
     {
       icon: Wallet,
@@ -70,92 +71,6 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
     }
   ];
 
-  const pricingPlans = [
-    {
-      name: 'Free Forever',
-      price: '$0',
-      period: '/forever',
-      description: 'Perfect for getting started with digital inheritance',
-      features: [
-        'Up to 3 assets',
-        '1 next of kin',
-        '1 short text message',
-        'Basic security',
-        'Mobile app access',
-        'Email support'
-      ],
-      buttonText: 'Start Free',
-      buttonStyle: 'border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50',
-      popular: false,
-      badge: 'Free'
-    },
-    {
-      name: 'HeritageVault Pro',
-      price: '$12',
-      period: '/month',
-      yearlyPrice: '$120',
-      yearlyPeriod: '/year',
-      description: 'Complete digital inheritance solution for families',
-      features: [
-        'Unlimited asset storage',
-        'Multiple next of kin',
-        'Voice & video messages',
-        'Flash questions & tests',
-        'Custom avatar creation',
-        'Advanced release logic',
-        'Priority support',
-        'Multi-language support',
-        'Advanced security features'
-      ],
-      buttonText: 'Start 7-Day Free Trial',
-      buttonStyle: 'bg-slate-900 text-white hover:bg-slate-800',
-      popular: true,
-      badge: 'Most Popular'
-    },
-    {
-      name: 'HeritageVault Forever',
-      price: '$89',
-      period: '/one-time',
-      description: 'Lifetime access - perfect for those who hate subscriptions',
-      features: [
-        'Unlimited assets',
-        'Lifetime storage',
-        'AI avatar creation',
-        '3 voice messages',
-        '10 flash questions',
-        'Vault release tracking',
-        'Exportable heritage report',
-        'Lifetime updates',
-        'No recurring fees'
-      ],
-      buttonText: 'Buy Lifetime Access',
-      buttonStyle: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700',
-      popular: false,
-      badge: 'Best Value'
-    }
-  ];
-
-  const addOns = [
-    {
-      name: 'AI Voice Message',
-      price: '$3.99',
-      description: 'Each additional personalized voice message',
-      icon: Mic
-    },
-    {
-      name: 'Animated Avatar Message',
-      price: '$4.99',
-      description: 'One-time custom avatar video creation',
-      icon: User
-    },
-    {
-      name: 'Multi-language Playback',
-      price: '$2.99',
-      description: 'Spanish, French, German, or other language support',
-      icon: Globe
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -174,9 +89,12 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
               <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Features
               </button>
-              <a href="#pricing" className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
+              <button 
+                onClick={onViewPricing}
+                className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors"
+              >
                 Pricing
-              </a>
+              </button>
               <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Security
               </button>
@@ -233,8 +151,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
                 <span>Start Free Forever</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="border-2 border-slate-300 text-slate-700 px-8 py-4 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 text-lg font-semibold">
-                Watch Demo
+              <button 
+                onClick={onViewPricing}
+                className="border-2 border-slate-300 text-slate-700 px-8 py-4 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 text-lg font-semibold"
+              >
+                View Pricing
               </button>
             </div>
             <p className="text-sm text-slate-500 mt-4">
@@ -404,139 +325,45 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-              Choose Your Heritage Plan
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Start free and upgrade when you need more. Professional digital inheritance management for every family's needs.
-            </p>
-          </div>
-
-          {/* Main Pricing Plans */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-            {pricingPlans.map((plan, index) => (
-              <div key={index} className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 hover:shadow-xl ${
-                plan.popular 
-                  ? 'border-slate-900 relative transform scale-105' 
-                  : 'border-slate-200 hover:border-slate-300'
-              }`}>
-                {plan.badge && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className={`px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 ${
-                      plan.popular 
-                        ? 'bg-slate-900 text-white' 
-                        : plan.badge === 'Free' 
-                        ? 'bg-green-600 text-white'
-                        : 'bg-purple-600 text-white'
-                    }`}>
-                      {plan.badge === 'Most Popular' && <Crown className="w-4 h-4" />}
-                      {plan.badge === 'Free' && <Gift className="w-4 h-4" />}
-                      {plan.badge === 'Best Value' && <Infinity className="w-4 h-4" />}
-                      <span>{plan.badge}</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="p-8">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
-                    <p className="text-slate-600 mb-4">{plan.description}</p>
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
-                      <span className="text-slate-600 ml-1">{plan.period}</span>
-                    </div>
-                    {plan.yearlyPrice && (
-                      <div className="mt-2">
-                        <span className="text-lg text-green-600 font-semibold">
-                          or {plan.yearlyPrice}{plan.yearlyPeriod}
-                        </span>
-                        <span className="text-sm text-green-600 block">Save 2 months!</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <ul className="space-y-4 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start space-x-3">
-                        <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-700 text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${plan.buttonStyle}`}>
-                    {plan.buttonText}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Add-ons Section */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-12">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Premium Add-ons</h3>
-              <p className="text-slate-600">Enhance your vault with optional premium features</p>
+      {/* Pricing CTA Section */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
+            Simple, Transparent Pricing
+          </h2>
+          <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+            Start free with 3 assets and 1 next of kin. Upgrade to Pro for unlimited storage and AI features, 
+            or choose our lifetime plan for one-time payment convenience.
+          </p>
+          
+          {/* Quick Pricing Preview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg p-6 border border-slate-200">
+              <h3 className="font-semibold text-slate-900 mb-2">Free Forever</h3>
+              <p className="text-2xl font-bold text-slate-900 mb-2">$0</p>
+              <p className="text-sm text-slate-600">3 assets • 1 next of kin</p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {addOns.map((addon, index) => {
-                const Icon = addon.icon;
-                return (
-                  <div key={index} className="border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-slate-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{addon.name}</h4>
-                        <p className="text-lg font-bold text-slate-900">{addon.price}</p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-slate-600">{addon.description}</p>
-                  </div>
-                );
-              })}
+            <div className="bg-white rounded-lg p-6 border-2 border-slate-900 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-medium">
+                Most Popular
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Pro</h3>
+              <p className="text-2xl font-bold text-slate-900 mb-2">$12<span className="text-sm text-slate-600">/month</span></p>
+              <p className="text-sm text-slate-600">Unlimited • AI features</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 border border-slate-200">
+              <h3 className="font-semibold text-slate-900 mb-2">Forever</h3>
+              <p className="text-2xl font-bold text-slate-900 mb-2">$89<span className="text-sm text-slate-600"> one-time</span></p>
+              <p className="text-sm text-slate-600">Lifetime access</p>
             </div>
           </div>
 
-          {/* Vault Unlock Fee Notice */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-12">
-            <div className="flex items-start space-x-3">
-              <Shield className="w-6 h-6 text-amber-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-amber-900 mb-2">High-Value Vault Security</h4>
-                <p className="text-amber-800 text-sm">
-                  For vaults containing over $250,000 in declared assets, a small verification fee ($10 or 0.5% capped at $50) 
-                  applies when beneficiaries unlock the vault. This covers enhanced digital security and verification processes.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <p className="text-slate-600 mb-4">
-              All plans include bank-level security • 24/7 support • Instant setup
-            </p>
-            <div className="flex items-center justify-center space-x-6 text-sm text-slate-500">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4" />
-                <span>256-bit encryption</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4" />
-                <span>US-based support team</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Zap className="w-4 h-4" />
-                <span>Mobile app included</span>
-              </div>
-            </div>
-          </div>
+          <button
+            onClick={onViewPricing}
+            className="bg-slate-900 text-white px-8 py-4 rounded-lg hover:bg-slate-800 transition-all duration-200 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            View All Plans & Features
+          </button>
         </div>
       </section>
 
@@ -619,7 +446,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
                 <li><a href="#" className="hover:text-white transition-colors">Asset Management</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">AI Voice Messages</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><button onClick={onViewPricing} className="hover:text-white transition-colors">Pricing</button></li>
               </ul>
             </div>
             <div>
