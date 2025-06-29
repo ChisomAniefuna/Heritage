@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, Video, Mic } from 'lucide-react';
+import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic } from 'lucide-react';
 
 interface HomepageProps {
   onLogin: () => void;
@@ -28,7 +28,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
       description: 'Record personalized voice messages that will be delivered to your loved ones using advanced AI voice synthesis.'
     },
     {
-      icon: Video,
+      icon: User,
       title: 'Avatar Video Messages',
       description: 'Create lifelike avatar videos that speak your words, providing comfort and guidance when you can\'t be there.'
     },
@@ -134,7 +134,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
                 <span className="text-sm font-medium text-slate-700">Bank-Level Security</span>
               </div>
               <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-                <MessageSquare className="w-4 h-4 text-purple-600" />
+                <User className="w-4 h-4 text-purple-600" />
                 <span className="text-sm font-medium text-slate-700">Avatar Video Message</span>
               </div>
             </div>
@@ -212,7 +212,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Video className="w-5 h-5 text-blue-600" />
+                    <User className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900">Avatar Video Messages</h3>
@@ -240,7 +240,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
                       <Mic className="w-6 h-6 text-purple-600" />
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Video className="w-6 h-6 text-blue-600" />
+                      <User className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
                   <p className="text-slate-600 font-medium">AI-Enhanced Asset Management</p>
