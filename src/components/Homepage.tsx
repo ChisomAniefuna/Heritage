@@ -73,7 +73,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
   const pricingPlans = [
     {
       name: 'Free Forever',
-      price: '₦0',
+      price: '$0',
       period: '/forever',
       description: 'Perfect for getting started with digital inheritance',
       features: [
@@ -91,9 +91,9 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
     },
     {
       name: 'LegacyVault Pro',
-      price: '₦5,000',
+      price: '$12',
       period: '/month',
-      yearlyPrice: '₦50,000',
+      yearlyPrice: '$120',
       yearlyPeriod: '/year',
       description: 'Complete digital inheritance solution for families',
       features: [
@@ -114,7 +114,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
     },
     {
       name: 'LegacyVault Forever',
-      price: '₦35,000',
+      price: '$89',
       period: '/one-time',
       description: 'Lifetime access - perfect for those who hate subscriptions',
       features: [
@@ -138,20 +138,20 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
   const addOns = [
     {
       name: 'AI Voice Message',
-      price: '₦1,500',
+      price: '$3.99',
       description: 'Each additional personalized voice message',
       icon: Mic
     },
     {
       name: 'Animated Avatar Message',
-      price: '₦2,000',
+      price: '$4.99',
       description: 'One-time custom avatar video creation',
       icon: User
     },
     {
       name: 'Multi-language Playback',
-      price: '₦1,000',
-      description: 'Hausa, Igbo, Yoruba, or French language support',
+      price: '$2.99',
+      description: 'Spanish, French, German, or other language support',
       icon: Globe
     }
   ];
@@ -511,7 +511,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
               <div>
                 <h4 className="font-semibold text-amber-900 mb-2">High-Value Vault Security</h4>
                 <p className="text-amber-800 text-sm">
-                  For vaults containing over ₦1M in declared assets, a small verification fee (₦500 or 1% capped at ₦2,000) 
+                  For vaults containing over $250,000 in declared assets, a small verification fee ($10 or 0.5% capped at $50) 
                   applies when beneficiaries unlock the vault. This covers enhanced digital security and verification processes.
                 </p>
               </div>
@@ -529,7 +529,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
               </div>
               <div className="flex items-center space-x-2">
                 <Users className="w-4 h-4" />
-                <span>Nigerian support team</span>
+                <span>US-based support team</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Zap className="w-4 h-4" />
