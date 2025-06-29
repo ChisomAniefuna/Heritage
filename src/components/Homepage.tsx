@@ -90,7 +90,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
       badge: 'Free'
     },
     {
-      name: 'LegacyVault Pro',
+      name: 'HeritageVault Pro',
       price: '$12',
       period: '/month',
       yearlyPrice: '$120',
@@ -113,7 +113,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
       badge: 'Most Popular'
     },
     {
-      name: 'LegacyVault Forever',
+      name: 'HeritageVault Forever',
       price: '$89',
       period: '/one-time',
       description: 'Lifetime access - perfect for those who hate subscriptions',
@@ -124,7 +124,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
         '3 voice messages',
         '10 flash questions',
         'Vault release tracking',
-        'Exportable legacy report',
+        'Exportable heritage report',
         'Lifetime updates',
         'No recurring fees'
       ],
@@ -202,7 +202,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Secure Your Family's
-              <span className="block text-slate-700">Digital Legacy</span>
+              <span className="block text-slate-700">Digital Heritage</span>
             </h1>
             <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               Professional digital inheritance management with comprehensive asset tracking, secure document storage, 
@@ -357,7 +357,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-              Simple Steps to Secure Your Legacy
+              Simple Steps to Secure Your Heritage
             </h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Professional estate planning made simple with modern technology and personal touches.
@@ -577,7 +577,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
             Start Protecting Your Family's Future Today
           </h2>
           <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-            Join thousands of families who have secured their digital legacy with professional asset management 
+            Join thousands of families who have secured their digital heritage with professional asset management 
             and personalized AI messaging. Your loved ones will thank you for the peace of mind.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
