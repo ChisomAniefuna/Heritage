@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic } from 'lucide-react';
+import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic, Crown, Zap } from 'lucide-react';
 
 interface HomepageProps {
   onLogin: () => void;
@@ -70,6 +70,69 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
     }
   ];
 
+  const pricingPlans = [
+    {
+      name: 'Essential',
+      price: '$19',
+      period: '/month',
+      description: 'Perfect for individuals starting their digital inheritance journey',
+      features: [
+        'Up to 25 assets',
+        '5 beneficiaries',
+        'Basic document storage (5GB)',
+        'Email notifications',
+        'Standard security',
+        'Mobile app access',
+        'Basic voice messages (10/month)'
+      ],
+      buttonText: 'Start Essential',
+      buttonStyle: 'border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50',
+      popular: false
+    },
+    {
+      name: 'Professional',
+      price: '$49',
+      period: '/month',
+      description: 'Ideal for families with comprehensive estate planning needs',
+      features: [
+        'Unlimited assets',
+        'Unlimited beneficiaries',
+        'Advanced document storage (50GB)',
+        'AI voice messages (unlimited)',
+        'Avatar video messages (5/month)',
+        'Conditional release rules',
+        'Knowledge verification tests',
+        'Priority support',
+        'Advanced security features',
+        'Legal document templates'
+      ],
+      buttonText: 'Start Professional',
+      buttonStyle: 'bg-slate-900 text-white hover:bg-slate-800',
+      popular: true
+    },
+    {
+      name: 'Enterprise',
+      price: '$149',
+      period: '/month',
+      description: 'For high-net-worth individuals and complex family structures',
+      features: [
+        'Everything in Professional',
+        'Unlimited avatar video messages',
+        'Multi-language support',
+        'Cultural avatar customization',
+        'White-glove setup service',
+        'Dedicated account manager',
+        'Custom integrations',
+        'Advanced analytics',
+        'Family office features',
+        'Concierge support'
+      ],
+      buttonText: 'Contact Sales',
+      buttonStyle: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700',
+      popular: false
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -88,11 +151,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
               <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Features
               </button>
+              <a href="#pricing" className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
+                Pricing
+              </a>
               <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
                 Security
-              </button>
-              <button className="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium transition-colors">
-                Pricing
               </button>
               <button
                 onClick={onLogin}
@@ -318,8 +381,85 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+              Choose Your Heritage Plan
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Professional digital inheritance management with AI-powered features for every family's needs.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <div key={index} className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 hover:shadow-xl ${
+                plan.popular 
+                  ? 'border-slate-900 relative transform scale-105' 
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1">
+                      <Crown className="w-4 h-4" />
+                      <span>Most Popular</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="p-8">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
+                    <p className="text-slate-600 mb-4">{plan.description}</p>
+                    <div className="flex items-baseline justify-center">
+                      <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
+                      <span className="text-slate-600 ml-1">{plan.period}</span>
+                    </div>
+                  </div>
+
+                  <ul className="space-y-4 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start space-x-3">
+                        <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-slate-700 text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${plan.buttonStyle}`}>
+                    {plan.buttonText}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-slate-600 mb-4">
+              All plans include 30-day free trial • No setup fees • Cancel anytime
+            </p>
+            <div className="flex items-center justify-center space-x-6 text-sm text-slate-500">
+              <div className="flex items-center space-x-2">
+                <Shield className="w-4 h-4" />
+                <span>Bank-level security</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4" />
+                <span>24/7 support</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Zap className="w-4 h-4" />
+                <span>Instant setup</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
@@ -331,7 +471,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-xl p-8 shadow-sm">
+              <div key={index} className="bg-slate-50 rounded-xl p-8 shadow-sm">
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
@@ -397,7 +537,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
                 <li><a href="#" className="hover:text-white transition-colors">Asset Management</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">AI Voice Messages</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
               </ul>
             </div>
             <div>
