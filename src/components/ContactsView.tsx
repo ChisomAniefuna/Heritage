@@ -24,10 +24,10 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            contact.isPrimaryBeneficiary ? 'bg-blue-100' : 'bg-slate-100'
+            contact.isPrimaryBeneficiary ? 'bg-purple-100' : 'bg-slate-100'
           }`}>
             <Users className={`w-5 h-5 ${
-              contact.isPrimaryBeneficiary ? 'text-blue-600' : 'text-slate-600'
+              contact.isPrimaryBeneficiary ? 'text-purple-600' : 'text-slate-600'
             }`} />
           </div>
           <div>
@@ -71,7 +71,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
           <h2 className="text-2xl font-bold text-slate-900">Contacts</h2>
           <p className="text-slate-600 mt-1">Manage beneficiaries and important contacts</p>
         </div>
-        <button className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+        <button className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
           <Plus className="w-4 h-4" />
           <span>Add Contact</span>
         </button>
@@ -86,7 +86,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -120,8 +120,8 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
 
       {filteredContacts.length === 0 && (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-slate-400" />
+          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-purple-400" />
           </div>
           <h3 className="text-lg font-medium text-slate-900 mb-2">No contacts found</h3>
           <p className="text-slate-600 mb-4">
@@ -130,7 +130,7 @@ const ContactsView: React.FC<ContactsViewProps> = ({ contacts, setContacts }) =>
               : 'Get started by adding your first contact'}
           </p>
           {!searchTerm && (
-            <button className="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
               Add Your First Contact
             </button>
           )}

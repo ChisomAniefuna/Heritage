@@ -86,7 +86,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+          className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           <span>Add Asset</span>
@@ -103,7 +103,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
               placeholder="Search assets..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
           <div className="flex items-center space-x-2 overflow-x-auto">
@@ -116,8 +116,8 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     selectedCategory === category.id
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-purple-100 hover:text-purple-700'
                   }`}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
@@ -145,8 +145,8 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
 
       {filteredAssets.length === 0 && (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-slate-400" />
+          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-purple-400" />
           </div>
           <h3 className="text-lg font-medium text-slate-900 mb-2">No assets found</h3>
           <p className="text-slate-600 mb-4">
@@ -157,7 +157,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
           {!searchTerm && selectedCategory === 'all' && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
             >
               Add Your First Asset
             </button>
