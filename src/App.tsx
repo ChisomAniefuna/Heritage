@@ -24,7 +24,7 @@ function App() {
       value: '$15,240',
       location: 'Chase Bank - Account #****1234',
       instructions: 'Main checking account for daily expenses. Online banking credentials stored in password manager.',
-      beneficiaries: ['Sarah Johnson', 'Michael Johnson'],
+      beneficiaries: ['Onyedika Aniefuna', 'Maryjane Aniefuna'],
       dateAdded: '2024-01-15',
       lastUpdated: '2024-12-20',
       releaseConditions: [
@@ -54,7 +54,7 @@ function App() {
       value: '$125,000',
       location: 'Fidelity Investments - Account #****5678',
       instructions: 'Diversified portfolio including stocks, bonds, and mutual funds. Contact advisor John Smith at (555) 123-4567.',
-      beneficiaries: ['Sarah Johnson'],
+      beneficiaries: ['Onyedika Aniefuna'],
       dateAdded: '2024-01-10',
       lastUpdated: '2024-12-18',
       releaseConditions: [
@@ -63,7 +63,7 @@ function App() {
           type: 'multi_party_approval',
           description: 'Require approval from spouse and attorney',
           parameters: { 
-            requiredApprovers: ['Sarah Johnson', 'Robert Smith, Esq.'],
+            requiredApprovers: ['Onyedika Aniefuna', 'Robert Smith, Esq.'],
             minimumApprovals: 2
           },
           status: 'pending',
@@ -79,7 +79,7 @@ function App() {
       value: '$450,000',
       location: '123 Oak Street, Springfield, IL 62701',
       instructions: 'Primary residence. Deed and mortgage documents in safety deposit box at First National Bank.',
-      beneficiaries: ['Sarah Johnson', 'Michael Johnson'],
+      beneficiaries: ['Onyedika Aniefuna', 'Maryjane Aniefuna'],
       dateAdded: '2024-01-05',
       lastUpdated: '2024-12-15'
     },
@@ -91,7 +91,7 @@ function App() {
       value: 'Priceless',
       location: 'Google Account: aniefuna.chisom@gmail.com',
       instructions: 'Contains family photos, important documents, and personal files. Enable legacy contact feature.',
-      beneficiaries: ['Sarah Johnson'],
+      beneficiaries: ['Onyedika Aniefuna'],
       dateAdded: '2024-01-20',
       lastUpdated: '2024-12-10',
       releaseConditions: [
@@ -110,11 +110,11 @@ function App() {
   const [contacts, setContacts] = useState<Contact[]>([
     {
       id: '1',
-      name: 'Sarah Johnson',
-      relationship: 'Spouse',
-      email: 'sarah.johnson@email.com',
-      phone: '(555) 123-4567',
-      address: '123 Oak Street, Springfield, IL 62701',
+      name: 'Onyedika Aniefuna',
+      relationship: 'Sister',
+      email: 'onyedika.aniefuna@email.com',
+      phone: '+234 803 123 4567',
+      address: '456 Pine Avenue, Lagos, Nigeria',
       isPrimaryBeneficiary: true,
       dateAdded: '2024-01-15',
       emergencyContact: true,
@@ -122,11 +122,11 @@ function App() {
     },
     {
       id: '2',
-      name: 'Michael Johnson',
-      relationship: 'Son',
-      email: 'michael.johnson@email.com',
+      name: 'Maryjane Aniefuna',
+      relationship: 'Sister',
+      email: 'maryjane.aniefuna@email.com',
       phone: '(555) 987-6543',
-      address: '456 Pine Avenue, Chicago, IL 60601',
+      address: '789 Elm Street, Chicago, IL 60601',
       isPrimaryBeneficiary: true,
       dateAdded: '2024-01-15',
       verificationMethod: 'phone'
@@ -218,7 +218,7 @@ function App() {
       id: '1',
       name: 'Emergency Contact Alert',
       trigger: 'immediate',
-      recipients: ['Sarah Johnson', 'Robert Smith, Esq.'],
+      recipients: ['Onyedika Aniefuna', 'Robert Smith, Esq.'],
       message: 'This is an automated notification regarding the Heritage Vault account. Please contact the designated executor for further instructions.',
       frequency: 'once',
       isActive: true
@@ -227,7 +227,7 @@ function App() {
       id: '2',
       name: 'Monthly Status Update',
       trigger: 'time_based',
-      recipients: ['Sarah Johnson'],
+      recipients: ['Onyedika Aniefuna'],
       message: 'Monthly status update: All systems are functioning normally. No action required at this time.',
       frequency: 'monthly',
       isActive: true,
