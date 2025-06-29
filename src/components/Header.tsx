@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ onGoHome }) => {
           </button>
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-slate-900">John Doe</p>
+              <p className="text-sm font-medium text-slate-900">Aniefuna Chisom</p>
               <p className="text-xs text-slate-500">Account Owner</p>
             </div>
             <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center">

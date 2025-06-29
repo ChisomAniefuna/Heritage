@@ -89,7 +89,7 @@ function App() {
       category: 'digital',
       type: 'Cloud Storage',
       value: 'Priceless',
-      location: 'Google Account: john.doe@gmail.com',
+      location: 'Google Account: aniefuna.chisom@gmail.com',
       instructions: 'Contains family photos, important documents, and personal files. Enable legacy contact feature.',
       beneficiaries: ['Sarah Johnson'],
       dateAdded: '2024-01-20',
