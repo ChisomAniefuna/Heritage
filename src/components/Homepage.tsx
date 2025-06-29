@@ -135,7 +135,7 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin }) => {
               </div>
               <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
                 <MessageSquare className="w-4 h-4 text-purple-600" />
-                <span className="text-sm font-medium text-slate-700">AI Messages</span>
+                <span className="text-sm font-medium text-slate-700">Avatar Video Message</span>
               </div>
             </div>
 
