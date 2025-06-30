@@ -9,10 +9,11 @@ import InheritanceEventsView from './components/InheritanceEventsView';
 import NotificationRulesView from './components/NotificationRulesView';
 import Homepage from './components/Homepage';
 import PricingPage from './components/PricingPage';
+import CheckinPage from './components/CheckinPage';
 import { Asset, Contact, Document, InheritanceEvent, NotificationRule } from './types';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app'>('homepage');
+  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app' | 'checkin'>('homepage');
   const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('dashboard');
   
   const [assets, setAssets] = useState<Asset[]>([
@@ -281,6 +282,15 @@ function App() {
     setCurrentPage('homepage');
   };
 
+  const handleGoToCheckin = () => {
+    setCurrentPage('checkin');
+  };
+
+  const handleBackFromCheckin = () => {
+    setCurrentPage('app');
+    setCurrentView('dashboard');
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'assets':
@@ -320,6 +330,10 @@ function App() {
 
   if (currentPage === 'pricing') {
     return <PricingPage onBack={handleBackToHome} onLogin={handleLogin} />;
+  }
+
+  if (currentPage === 'checkin') {
+    return <CheckinPage onBack={handleBackFromCheckin} />;
   }
 
   return (

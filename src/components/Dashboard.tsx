@@ -1,6 +1,7 @@
 import React from 'react';
-import { Wallet, Users, FileText, TrendingUp, Shield, Clock } from 'lucide-react';
+import { Wallet, Users, FileText, TrendingUp, Shield, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Asset, Contact, Document } from '../types';
+import CheckinManager from './CheckinManager';
 
 interface DashboardProps {
   assets: Asset[];
@@ -71,6 +72,15 @@ const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) =>
         />
       </div>
 
+      {/* Check-in Manager */}
+      <div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">6-Month Check-in System</h3>
+        <CheckinManager 
+          userId="current_user_id" 
+          userEmail="aniefuna.chisom@gmail.com" 
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
@@ -104,6 +114,13 @@ const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) =>
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">Account Security</span>
               <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Secure</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-600">6-Month Check-in</span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex items-center space-x-1">
+                <CheckCircle className="w-3 h-3" />
+                <span>Active</span>
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">Backup Status</span>
