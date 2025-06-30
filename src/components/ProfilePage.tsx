@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, Shield, CreditCard, Edit, CheckCircle, AlertCircle, LogOut } from 'lucide-react';
 import { User as UserType } from '../services/supabase';
 import { supabaseAuth } from '../services/supabase';
-import { revenueCatService, formatSubscriptionStatus, UserSubscription } from '../services/revenuecat';
+import { stripeService, formatSubscriptionStatus, UserSubscription } from '../services/stripe';
 import SubscriptionManager from './SubscriptionManager';
 
 interface ProfilePageProps {
@@ -38,9 +38,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userProfile, onSignOut, onUpd
 
   const loadSubscriptionData = async () => {
     try {
-      if (revenueCatService.isConfigured()) {
-        await revenueCatService.initialize();
-        const userSubscription = await revenueCatService.getUserSubscription();
+      if (stripeService.isConfigured()) {
+        await stripeService.initialize();
+        const userSubscription = await stripeService.getUserSubscription();
         setSubscription(userSubscription);
       }
     } catch (error) {

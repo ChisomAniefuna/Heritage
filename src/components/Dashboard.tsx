@@ -3,7 +3,7 @@ import { Wallet, Users, FileText, TrendingUp, Shield, Clock, CheckCircle, AlertT
 import { Asset, Contact, Document } from '../types';
 import CheckinManager from './CheckinManager';
 import SubscriptionManager from './SubscriptionManager';
-import { revenueCatService, UserSubscription, formatSubscriptionStatus } from '../services/revenuecat';
+import { stripeService, UserSubscription, formatSubscriptionStatus } from '../services/stripe';
 
 interface DashboardProps {
   assets: Asset[];
@@ -21,9 +21,9 @@ const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) =>
 
   const loadSubscriptionData = async () => {
     try {
-      if (revenueCatService.isConfigured()) {
-        await revenueCatService.initialize();
-        const userSubscription = await revenueCatService.getUserSubscription();
+      if (stripeService.isConfigured()) {
+        await stripeService.initialize();
+        const userSubscription = await stripeService.getUserSubscription();
         setSubscription(userSubscription);
       }
     } catch (error) {

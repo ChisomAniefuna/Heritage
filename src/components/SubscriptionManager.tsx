@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Crown, Check, Loader, AlertCircle, Gift, Infinity, Zap } from 'lucide-react';
-import { revenueCatService, SubscriptionPlan, UserSubscription, formatSubscriptionStatus } from '../services/revenuecat';
+import { stripeService, StripeSubscriptionPlan, UserSubscription, formatSubscriptionStatus } from '../services/stripe';
 
 interface SubscriptionManagerProps {
   onClose: () => void;
@@ -8,7 +8,7 @@ interface SubscriptionManagerProps {
 }
 
 const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSubscriptionChange }) => {
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plans, setPlans] = useState<StripeSubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -24,18 +24,18 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
       setLoading(true);
       setError(null);
 
-      // Initialize RevenueCat if not already done
-      if (!revenueCatService.isConfigured()) {
-        setError('RevenueCat is not configured. Please add your public key to environment variables.');
+      // Initialize Stripe if not already done
+      if (!stripeService.isConfigured()) {
+        setError('Stripe is not configured. Please add your publishable key to environment variables.');
         return;
       }
 
-      await revenueCatService.initialize();
+      await stripeService.initialize();
       
       // Load current subscription and available plans
       const [subscription, availablePlans] = await Promise.all([
-        revenueCatService.getUserSubscription(),
-        revenueCatService.getSubscriptionPlans()
+        stripeService.getUserSubscription(),
+        stripeService.getSubscriptionPlans()
       ]);
 
       setCurrentSubscription(subscription);
@@ -48,36 +48,30 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
     }
   };
 
-  const handlePurchase = async (planId: string) => {
-    if (planId === 'free') return; // Can't purchase free plan
+  const handlePurchase = async (plan: StripeSubscriptionPlan) => {
+    if (plan.id === 'free') return; // Can't purchase free plan
 
     try {
-      setPurchasing(planId);
+      setPurchasing(plan.id);
       setError(null);
       setPurchaseSuccess(false);
 
-      // Get offerings to find the package
-      const offerings = await revenueCatService.getOfferings();
-      let packageToPurchase = null;
-
-      for (const offering of offerings) {
-        if (offering.availablePackages) {
-          packageToPurchase = offering.availablePackages.find(
-            (pkg: any) => pkg.product.identifier === planId
-          );
-          if (packageToPurchase) break;
-        }
+      // For demo purposes, update the mock subscription
+      if (plan.packageType === 'lifetime') {
+        stripeService.updateMockSubscription('forever');
+      } else {
+        stripeService.updateMockSubscription('pro');
       }
 
-      if (!packageToPurchase) {
-        throw new Error('Package not found');
-      }
+      // In a real implementation, redirect to Stripe checkout
+      // await stripeService.redirectToCheckout(
+      //   plan.priceId,
+      //   `${window.location.origin}/subscription/success`,
+      //   `${window.location.origin}/subscription/cancel`
+      // );
 
-      // Make the purchase
-      await revenueCatService.purchasePackage(packageToPurchase);
-      
       // Reload subscription data
-      const updatedSubscription = await revenueCatService.getUserSubscription();
+      const updatedSubscription = await stripeService.getUserSubscription();
       setCurrentSubscription(updatedSubscription);
       
       if (onSubscriptionChange) {
@@ -89,45 +83,31 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
       
     } catch (err: any) {
       console.error('Purchase failed:', err);
-      
-      // Handle specific RevenueCat errors
-      if (err.code === 'PURCHASE_CANCELLED') {
-        setError('Purchase was cancelled.');
-      } else if (err.code === 'PAYMENT_PENDING') {
-        setError('Payment is pending. Please check back later.');
-      } else {
-        setError('Purchase failed. Please try again or contact support.');
-      }
+      setError('Purchase failed. Please try again or contact support.');
     } finally {
       setPurchasing(null);
     }
   };
 
-  const handleRestore = async () => {
+  const handleManageSubscription = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      await revenueCatService.restorePurchases();
+      // In a real implementation, redirect to Stripe customer portal
+      // await stripeService.redirectToCustomerPortal(window.location.origin);
       
-      // Reload subscription data
-      const updatedSubscription = await revenueCatService.getUserSubscription();
-      setCurrentSubscription(updatedSubscription);
-      
-      if (onSubscriptionChange) {
-        onSubscriptionChange(updatedSubscription);
-      }
-
-      alert('Purchases restored successfully!');
+      // For demo purposes, just close the modal
+      onClose();
     } catch (err) {
-      console.error('Restore failed:', err);
-      setError('Failed to restore purchases. Please try again.');
+      console.error('Failed to open customer portal:', err);
+      setError('Failed to open customer portal. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getPlanBadge = (plan: SubscriptionPlan) => {
+  const getPlanBadge = (plan: StripeSubscriptionPlan) => {
     if (plan.id === 'free') {
       return { icon: Gift, text: 'Free', color: 'bg-green-600' };
     }
@@ -142,7 +122,9 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
 
   const isCurrentPlan = (planId: string) => {
     if (planId === 'free' && currentSubscription?.plan === 'free') return true;
-    if (currentSubscription?.productId === planId) return true;
+    if (planId === 'pro_monthly' && currentSubscription?.plan === 'pro') return true;
+    if (planId === 'pro_yearly' && currentSubscription?.plan === 'pro') return true;
+    if (planId === 'forever' && currentSubscription?.plan === 'forever') return true;
     return false;
   };
 
@@ -259,7 +241,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
                     </ul>
 
                     <button
-                      onClick={() => handlePurchase(plan.id)}
+                      onClick={() => handlePurchase(plan)}
                       disabled={isCurrent || isPurchasing || plan.id === 'free'}
                       className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
                         isCurrent
@@ -289,14 +271,16 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
           </div>
 
           <div className="flex items-center justify-between pt-6 border-t border-slate-200">
-            <button
-              onClick={handleRestore}
-              disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2 text-purple-700 hover:text-purple-800 transition-colors"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Restore Purchases</span>
-            </button>
+            {currentSubscription?.plan !== 'free' && (
+              <button
+                onClick={handleManageSubscription}
+                disabled={loading}
+                className="flex items-center space-x-2 px-4 py-2 text-purple-700 hover:text-purple-800 transition-colors"
+              >
+                <Zap className="w-4 h-4" />
+                <span>Manage Subscription</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}

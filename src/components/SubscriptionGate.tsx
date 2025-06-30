@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Crown, Lock, Zap } from 'lucide-react';
-import { UserSubscription } from '../services/revenuecat';
+import { UserSubscription } from '../services/stripe';
 import SubscriptionManager from './SubscriptionManager';
 
 interface SubscriptionGateProps {

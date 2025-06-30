@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { revenueCatService, UserSubscription } from '../services/revenuecat';
+import { stripeService, UserSubscription } from '../services/stripe';
 
 export const useSubscription = () => {
   const [subscription, setSubscription] = useState<UserSubscription>({
@@ -22,9 +22,9 @@ export const useSubscription = () => {
       setLoading(true);
       setError(null);
 
-      if (revenueCatService.isConfigured()) {
-        await revenueCatService.initialize();
-        const userSubscription = await revenueCatService.getUserSubscription();
+      if (stripeService.isConfigured()) {
+        await stripeService.initialize();
+        const userSubscription = await stripeService.getUserSubscription();
         setSubscription(userSubscription);
       }
     } catch (err) {
@@ -37,7 +37,7 @@ export const useSubscription = () => {
 
   const refreshSubscription = async () => {
     try {
-      const userSubscription = await revenueCatService.getUserSubscription();
+      const userSubscription = await stripeService.getUserSubscription();
       setSubscription(userSubscription);
     } catch (err) {
       console.error('Error refreshing subscription:', err);
@@ -45,15 +45,15 @@ export const useSubscription = () => {
   };
 
   const canAddAsset = async (currentCount: number) => {
-    return await revenueCatService.canAddAsset(currentCount);
+    return await stripeService.canAddAsset(currentCount);
   };
 
   const canAddContact = async (currentCount: number) => {
-    return await revenueCatService.canAddContact(currentCount);
+    return await stripeService.canAddContact(currentCount);
   };
 
   const canUseAIFeatures = async () => {
-    return await revenueCatService.canUseAIFeatures();
+    return await stripeService.canUseAIFeatures();
   };
 
   const hasProAccess = () => {

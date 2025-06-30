@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Check, Crown, Gift, Infinity, Mic, User, Globe, ArrowLeft, Zap, Users } from 'lucide-react';
-import { revenueCatService, SubscriptionPlan } from '../services/revenuecat';
+import { stripeService, StripeSubscriptionPlan } from '../services/stripe';
 import SubscriptionManager from './SubscriptionManager';
 
 interface PricingPageProps {
@@ -10,70 +10,7 @@ interface PricingPageProps {
 
 const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
-  const [pricingPlans, setPricingPlans] = useState([
-    {
-      name: 'Free Forever',
-      price: '$0',
-      period: '/forever',
-      description: 'Perfect for getting started with digital inheritance',
-      features: [
-        'Up to 3 assets',
-        '1 next of kin',
-        '1 short text message',
-        'Basic security',
-        'Mobile app access',
-        'Email support'
-      ],
-      buttonText: 'Start Free',
-      buttonStyle: 'border-2 border-purple-700 text-purple-800 hover:border-purple-800 hover:bg-purple-50',
-      popular: false,
-      badge: 'Free'
-    },
-    {
-      name: 'HeritageVault Pro',
-      price: '$12',
-      period: '/month',
-      yearlyPrice: '$120',
-      yearlyPeriod: '/year',
-      description: 'Complete digital inheritance solution for families',
-      features: [
-        'Unlimited asset storage',
-        'Multiple next of kin',
-        'Voice & video messages',
-        'Flash questions & tests',
-        'Custom avatar creation',
-        'Advanced release logic',
-        'Priority support',
-        'Multi-language support',
-        'Advanced security features'
-      ],
-      buttonText: 'Start 7-Day Free Trial',
-      buttonStyle: 'bg-purple-700 text-white hover:bg-purple-800',
-      popular: true,
-      badge: 'Most Popular'
-    },
-    {
-      name: 'HeritageVault Forever',
-      price: '$89',
-      period: '/one-time',
-      description: 'Lifetime access - perfect for those who hate subscriptions',
-      features: [
-        'Unlimited assets',
-        'Lifetime storage',
-        'AI avatar creation',
-        '3 voice messages',
-        '10 flash questions',
-        'Vault release tracking',
-        'Exportable heritage report',
-        'Lifetime updates',
-        'No recurring fees'
-      ],
-      buttonText: 'Buy Lifetime Access',
-      buttonStyle: 'bg-gradient-to-r from-purple-700 to-pink-700 text-white hover:from-purple-800 hover:to-pink-800',
-      popular: false,
-      badge: 'Best Value'
-    }
-  ]);
+  const [pricingPlans, setPricingPlans] = useState<StripeSubscriptionPlan[]>([]);
 
   const addOns = [
     {
@@ -113,9 +50,9 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
 
   const loadPlans = async () => {
     try {
-      if (revenueCatService.isConfigured()) {
-        await revenueCatService.initialize();
-        const plans = await revenueCatService.getSubscriptionPlans();
+      if (stripeService.isConfigured()) {
+        await stripeService.initialize();
+        const plans = await stripeService.getSubscriptionPlans();
         if (plans.length > 0) {
           setPricingPlans(plans);
         }
@@ -125,8 +62,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
     }
   };
 
-  const handlePricingButtonClick = (plan: any) => {
-    if (plan.name === 'Free Forever') {
+  const handlePricingButtonClick = (plan: StripeSubscriptionPlan) => {
+    if (plan.id === 'free') {
       onLogin();
     } else {
       setShowSubscriptionManager(true);
@@ -202,14 +139,14 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
               
               return (
                 <div key={index} className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 hover:shadow-xl ${
-                  plan.popular 
+                  plan.isPopular 
                     ? 'border-purple-700 relative transform scale-105' 
                     : 'border-slate-200 hover:border-purple-300'
                 }`}>
                   {plan.badge && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <div className={`px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 ${
-                        plan.popular 
+                        plan.isPopular 
                           ? 'bg-purple-700 text-white' 
                           : plan.badge === 'Free' 
                           ? 'bg-green-600 text-white'
