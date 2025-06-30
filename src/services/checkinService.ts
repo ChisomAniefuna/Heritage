@@ -11,6 +11,15 @@ export interface CheckinStatus {
   maxReminders: number;
   gracePeriodDays: number;
   isActive: boolean;
+  privacyPreferences: CheckinPrivacyPreferences;
+}
+
+export interface CheckinPrivacyPreferences {
+  alertBeneficiariesWhenOverdue: boolean; // NEW: Control beneficiary alerts
+  alertType: 'concern' | 'direct_inheritance'; // NEW: Type of alert to send
+  allowWellnessChecks: boolean; // NEW: Allow beneficiaries to check on user
+  inheritanceOnlyMode: boolean; // NEW: Skip concern alerts, go straight to inheritance
+  customMessage?: string; // NEW: Custom message for beneficiaries
 }
 
 export interface CheckinReminder {
@@ -29,12 +38,13 @@ export interface BeneficiaryNotification {
   id: string;
   userId: string;
   beneficiaryId: string;
-  type: 'user_inactive' | 'presumed_deceased' | 'inheritance_triggered';
+  type: 'user_inactive' | 'presumed_deceased' | 'inheritance_triggered' | 'direct_inheritance';
   sentDate: string;
   status: 'sent' | 'acknowledged' | 'action_taken';
   message: string;
   actionRequired: boolean;
   inheritanceTriggered: boolean;
+  privacyRespected: boolean; // NEW: Indicates if privacy preferences were followed
 }
 
 class CheckinService {
@@ -43,11 +53,24 @@ class CheckinService {
   private readonly GRACE_PERIOD_DAYS = 14; // Days after due date before triggering alerts
   private readonly MAX_REMINDERS = 6; // Total reminders before presuming deceased
 
-  // Initialize check-in for a new user
-  async initializeUserCheckin(userId: string, userEmail: string): Promise<CheckinStatus> {
+  // Initialize check-in for a new user with privacy preferences
+  async initializeUserCheckin(
+    userId: string, 
+    userEmail: string,
+    privacyPreferences?: Partial<CheckinPrivacyPreferences>
+  ): Promise<CheckinStatus> {
     const now = new Date();
     const nextCheckin = new Date(now);
     nextCheckin.setMonth(nextCheckin.getMonth() + this.CHECKIN_INTERVAL_MONTHS);
+
+    // Default privacy preferences (user can modify these)
+    const defaultPrivacyPreferences: CheckinPrivacyPreferences = {
+      alertBeneficiariesWhenOverdue: true, // Default: alert beneficiaries
+      alertType: 'concern', // Default: send concern alerts first
+      allowWellnessChecks: true, // Default: allow wellness checks
+      inheritanceOnlyMode: false, // Default: not inheritance-only mode
+      customMessage: undefined
+    };
 
     const checkinStatus: CheckinStatus = {
       id: `checkin_${userId}_${Date.now()}`,
@@ -58,7 +81,8 @@ class CheckinService {
       remindersSent: 0,
       maxReminders: this.MAX_REMINDERS,
       gracePeriodDays: this.GRACE_PERIOD_DAYS,
-      isActive: true
+      isActive: true,
+      privacyPreferences: { ...defaultPrivacyPreferences, ...privacyPreferences }
     };
 
     // Save to localStorage (in production, this would be a database)
@@ -67,8 +91,28 @@ class CheckinService {
     // Schedule initial reminders
     await this.scheduleReminders(checkinStatus, userEmail);
 
-    console.log('User check-in initialized:', checkinStatus);
+    console.log('User check-in initialized with privacy preferences:', checkinStatus);
     return checkinStatus;
+  }
+
+  // Update user's privacy preferences
+  async updatePrivacyPreferences(
+    userId: string, 
+    preferences: Partial<CheckinPrivacyPreferences>
+  ): Promise<CheckinStatus | null> {
+    const currentStatus = this.getCheckinStatus(userId);
+    if (!currentStatus) {
+      throw new Error('Check-in status not found for user');
+    }
+
+    const updatedStatus: CheckinStatus = {
+      ...currentStatus,
+      privacyPreferences: { ...currentStatus.privacyPreferences, ...preferences }
+    };
+
+    this.saveCheckinStatus(updatedStatus);
+    console.log('Privacy preferences updated:', updatedStatus.privacyPreferences);
+    return updatedStatus;
   }
 
   // Process user check-in
@@ -107,18 +151,20 @@ class CheckinService {
     return updatedStatus;
   }
 
-  // Check for overdue check-ins and send reminders
+  // Check for overdue check-ins and send reminders (respecting privacy preferences)
   async processOverdueCheckins(): Promise<{
     processed: number;
     remindersSent: number;
     beneficiaryAlerts: number;
     inheritanceTriggered: number;
+    privacyRespected: number;
   }> {
     const results = {
       processed: 0,
       remindersSent: 0,
       beneficiaryAlerts: 0,
-      inheritanceTriggered: 0
+      inheritanceTriggered: 0,
+      privacyRespected: 0
     };
 
     const allCheckins = this.getAllCheckinStatuses();
@@ -144,18 +190,20 @@ class CheckinService {
             results.remindersSent++;
           }
         } else {
-          // Past grace period - alert beneficiaries
+          // Past grace period - handle based on privacy preferences
           if (checkin.remindersSent >= checkin.maxReminders) {
-            // Presume deceased and trigger inheritance
-            checkin.status = 'deceased_presumed';
-            this.saveCheckinStatus(checkin);
-            
-            await this.triggerInheritanceProcess(checkin);
+            // Trigger inheritance based on privacy preferences
+            await this.handleInheritanceBasedOnPrivacy(checkin);
             results.inheritanceTriggered++;
           } else {
-            // Send beneficiary alerts
-            await this.alertBeneficiaries(checkin);
-            results.beneficiaryAlerts++;
+            // Handle beneficiary alerts based on privacy preferences
+            const alertResult = await this.handleBeneficiaryAlertsBasedOnPrivacy(checkin);
+            if (alertResult.alertSent) {
+              results.beneficiaryAlerts++;
+            }
+            if (alertResult.privacyRespected) {
+              results.privacyRespected++;
+            }
           }
         }
       } else {
@@ -169,6 +217,296 @@ class CheckinService {
     }
 
     return results;
+  }
+
+  // Handle beneficiary alerts based on privacy preferences
+  private async handleBeneficiaryAlertsBasedOnPrivacy(checkin: CheckinStatus): Promise<{
+    alertSent: boolean;
+    privacyRespected: boolean;
+  }> {
+    const { privacyPreferences } = checkin;
+
+    // If user doesn't want beneficiaries alerted when overdue
+    if (!privacyPreferences.alertBeneficiariesWhenOverdue) {
+      console.log(`Privacy respected: User ${checkin.userId} doesn't want beneficiaries alerted when overdue`);
+      
+      // Skip to inheritance trigger after max reminders
+      if (checkin.remindersSent >= checkin.maxReminders) {
+        await this.triggerDirectInheritance(checkin);
+      }
+      
+      return { alertSent: false, privacyRespected: true };
+    }
+
+    // If user wants inheritance-only mode (no wellness check alerts)
+    if (privacyPreferences.inheritanceOnlyMode) {
+      console.log(`Privacy respected: User ${checkin.userId} wants inheritance-only mode`);
+      await this.sendDirectInheritanceNotification(checkin);
+      return { alertSent: true, privacyRespected: true };
+    }
+
+    // Send alerts based on alert type preference
+    if (privacyPreferences.alertType === 'direct_inheritance') {
+      await this.sendDirectInheritanceNotification(checkin);
+    } else {
+      // Default concern-based alerts
+      await this.alertBeneficiaries(checkin);
+    }
+
+    return { alertSent: true, privacyRespected: false };
+  }
+
+  // Handle inheritance based on privacy preferences
+  private async handleInheritanceBasedOnPrivacy(checkin: CheckinStatus): Promise<void> {
+    const { privacyPreferences } = checkin;
+
+    if (!privacyPreferences.alertBeneficiariesWhenOverdue || privacyPreferences.inheritanceOnlyMode) {
+      // Direct inheritance without prior alerts
+      await this.triggerDirectInheritance(checkin);
+    } else {
+      // Standard inheritance process
+      await this.triggerInheritanceProcess(checkin);
+    }
+  }
+
+  // Send direct inheritance notification (no wellness check)
+  private async sendDirectInheritanceNotification(checkin: CheckinStatus): Promise<void> {
+    const user = await this.getUserInfo(checkin.userId);
+    const beneficiaries = await this.getUserBeneficiaries(checkin.userId);
+    
+    if (!user || !beneficiaries.length) return;
+
+    const daysPastDue = Math.floor(
+      (new Date().getTime() - new Date(checkin.nextCheckinDue).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    for (const beneficiary of beneficiaries) {
+      const subject = `Heritage Vault: Inheritance Process for ${user.name}`;
+      const message = this.generateDirectInheritanceMessage(
+        user.name,
+        beneficiary.name,
+        beneficiary.relationship,
+        daysPastDue,
+        checkin.privacyPreferences.customMessage
+      );
+
+      await emailService.sendEmail({
+        to: beneficiary.email,
+        subject,
+        html: message,
+        priority: 'high'
+      });
+
+      // Save beneficiary notification record
+      const notification: BeneficiaryNotification = {
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: checkin.userId,
+        beneficiaryId: beneficiary.id,
+        type: 'direct_inheritance',
+        sentDate: new Date().toISOString(),
+        status: 'sent',
+        message: `Direct inheritance notification sent for ${user.name} (privacy preferences respected)`,
+        actionRequired: true,
+        inheritanceTriggered: true,
+        privacyRespected: true
+      };
+
+      this.saveBeneficiaryNotification(notification);
+    }
+
+    console.log(`Direct inheritance notifications sent for user ${checkin.userId} (privacy respected)`);
+  }
+
+  // Trigger direct inheritance (respecting privacy)
+  private async triggerDirectInheritance(checkin: CheckinStatus): Promise<void> {
+    const user = await this.getUserInfo(checkin.userId);
+    const beneficiaries = await this.getUserBeneficiaries(checkin.userId);
+    
+    if (!user || !beneficiaries.length) return;
+
+    console.log(`Triggering direct inheritance for user ${checkin.userId} (privacy preferences respected)`);
+
+    // Mark user as presumed deceased
+    checkin.status = 'deceased_presumed';
+    checkin.isActive = false;
+    this.saveCheckinStatus(checkin);
+
+    // Notify all beneficiaries about inheritance (no wellness check mentioned)
+    for (const beneficiary of beneficiaries) {
+      const subject = `Heritage Vault: Inheritance Access Available for ${user.name}`;
+      const message = this.generatePrivacyRespectingInheritanceMessage(
+        user.name,
+        beneficiary.name,
+        beneficiary.relationship,
+        checkin.privacyPreferences.customMessage
+      );
+
+      await emailService.sendEmail({
+        to: beneficiary.email,
+        subject,
+        html: message,
+        priority: 'urgent'
+      });
+
+      // Save inheritance notification
+      const notification: BeneficiaryNotification = {
+        id: `inherit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: checkin.userId,
+        beneficiaryId: beneficiary.id,
+        type: 'inheritance_triggered',
+        sentDate: new Date().toISOString(),
+        status: 'sent',
+        message: `Inheritance process initiated for ${user.name} (privacy preferences respected)`,
+        actionRequired: true,
+        inheritanceTriggered: true,
+        privacyRespected: true
+      };
+
+      this.saveBeneficiaryNotification(notification);
+    }
+
+    // Trigger actual inheritance release logic
+    await this.executeInheritanceRelease(checkin.userId);
+  }
+
+  // Generate direct inheritance message (no wellness check context)
+  private generateDirectInheritanceMessage(
+    userName: string,
+    beneficiaryName: string,
+    relationship: string,
+    daysPastDue: number,
+    customMessage?: string
+  ): string {
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px;">🏛️ Heritage Vault: Inheritance Available</h1>
+        </div>
+        
+        <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 18px; color: #374151; margin-bottom: 20px;">Dear ${beneficiaryName},</p>
+          
+          <div style="background: #ede9fe; border: 2px solid #6366f1; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #4338ca; margin: 0 0 10px 0;">📋 Inheritance Access Available</h3>
+            <p style="color: #4338ca; margin: 0; font-weight: bold;">
+              ${userName}'s Heritage Vault inheritance process has been activated and assets are now available for transfer.
+            </p>
+          </div>
+          
+          <p style="color: #374151; line-height: 1.6;">
+            According to ${userName}'s predetermined instructions, their Heritage Vault inheritance process has been 
+            initiated. You have been designated as a beneficiary and can now access your inheritance.
+          </p>
+
+          ${customMessage ? `
+          <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #0c4a6e; margin: 0 0 10px 0;">💌 Personal Message from ${userName}:</h4>
+            <p style="color: #0c4a6e; margin: 0; font-style: italic;">"${customMessage}"</p>
+          </div>
+          ` : ''}
+          
+          <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #047857; margin: 0 0 15px 0;">✅ What happens next:</h4>
+            <ul style="color: #047857; margin: 0; padding-left: 20px; line-height: 1.6;">
+              <li>You will receive detailed information about assets designated for you</li>
+              <li>Verification processes will begin for asset transfers</li>
+              <li>Legal documentation may be required for certain assets</li>
+              <li>Our team will guide you through each step of the process</li>
+            </ul>
+          </div>
+          
+          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #92400e; margin: 0 0 15px 0;">📋 Required Actions:</h4>
+            <ul style="color: #92400e; margin: 0; padding-left: 20px; line-height: 1.6;">
+              <li>Verify your identity and relationship to ${userName}</li>
+              <li>Provide any required legal documentation</li>
+              <li>Review and acknowledge asset transfer details</li>
+              <li>Complete any knowledge verification tests if required</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${this.getInheritancePortalUrl()}" style="background: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+              🏛️ Access Your Inheritance
+            </a>
+          </div>
+          
+          <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #374151; margin: 0 0 10px 0;">📞 Support & Assistance</h4>
+            <p style="color: #6b7280; margin: 0;">
+              Our inheritance specialists are available to help you through this process. 
+              Contact us at inheritance@heritagevault.com or call our dedicated inheritance support line.
+            </p>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+            This process was initiated automatically based on ${userName}'s predetermined instructions. 
+            All actions are being carried out according to their wishes as specified in their Heritage Vault.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
+  // Generate privacy-respecting inheritance message
+  private generatePrivacyRespectingInheritanceMessage(
+    userName: string,
+    beneficiaryName: string,
+    relationship: string,
+    customMessage?: string
+  ): string {
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px;">🏛️ Heritage Vault: Inheritance Process Initiated</h1>
+        </div>
+        
+        <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 18px; color: #374151; margin-bottom: 20px;">Dear ${beneficiaryName},</p>
+          
+          <div style="background: #ede9fe; border: 2px solid #6366f1; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #4338ca; margin: 0 0 10px 0;">📋 Inheritance Process Activated</h3>
+            <p style="color: #4338ca; margin: 0; font-weight: bold;">
+              ${userName}'s Heritage Vault inheritance process has been initiated according to their predetermined instructions.
+            </p>
+          </div>
+          
+          <p style="color: #374151; line-height: 1.6;">
+            ${userName} has set up their Heritage Vault to automatically initiate inheritance processes when certain 
+            conditions are met. These conditions have now been satisfied, and you are receiving this notification 
+            as a designated beneficiary.
+          </p>
+
+          ${customMessage ? `
+          <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #0c4a6e; margin: 0 0 10px 0;">💌 Personal Message from ${userName}:</h4>
+            <p style="color: #0c4a6e; margin: 0; font-style: italic;">"${customMessage}"</p>
+          </div>
+          ` : ''}
+          
+          <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h4 style="color: #047857; margin: 0 0 15px 0;">✅ What happens next:</h4>
+            <ul style="color: #047857; margin: 0; padding-left: 20px; line-height: 1.6;">
+              <li>You will receive detailed information about assets designated for you</li>
+              <li>Verification processes will begin for asset transfers</li>
+              <li>Legal documentation may be required for certain assets</li>
+              <li>Our team will guide you through each step of the process</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${this.getInheritancePortalUrl()}" style="background: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+              🏛️ Access Inheritance Portal
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+            This process was initiated automatically based on ${userName}'s predetermined instructions and privacy preferences. 
+            All actions are being carried out according to their wishes as specified in their Heritage Vault.
+          </p>
+        </div>
+      </div>
+    `;
   }
 
   // Send upcoming check-in reminder
@@ -213,7 +551,8 @@ class CheckinService {
       daysPastDue, 
       checkin.gracePeriodDays - daysPastDue,
       checkin.remindersSent + 1,
-      checkin.maxReminders
+      checkin.maxReminders,
+      checkin.privacyPreferences
     );
 
     await emailService.sendEmail({
@@ -235,8 +574,14 @@ class CheckinService {
     console.log(`Overdue reminder sent to user ${checkin.userId}, attempt ${checkin.remindersSent + 1}`);
   }
 
-  // Alert beneficiaries about inactive user
+  // Alert beneficiaries about inactive user (original method, respects privacy)
   private async alertBeneficiaries(checkin: CheckinStatus): Promise<void> {
+    // Only send if user allows beneficiary alerts
+    if (!checkin.privacyPreferences.alertBeneficiariesWhenOverdue) {
+      console.log(`Skipping beneficiary alerts for user ${checkin.userId} due to privacy preferences`);
+      return;
+    }
+
     const user = await this.getUserInfo(checkin.userId);
     const beneficiaries = await this.getUserBeneficiaries(checkin.userId);
     
@@ -253,7 +598,8 @@ class CheckinService {
         beneficiary.name,
         beneficiary.relationship,
         daysPastDue,
-        checkin.gracePeriodDays
+        checkin.gracePeriodDays,
+        checkin.privacyPreferences.allowWellnessChecks
       );
 
       await emailService.sendEmail({
@@ -272,8 +618,9 @@ class CheckinService {
         sentDate: new Date().toISOString(),
         status: 'sent',
         message: `User ${user.name} has not responded to check-ins for ${daysPastDue} days`,
-        actionRequired: false,
-        inheritanceTriggered: false
+        actionRequired: checkin.privacyPreferences.allowWellnessChecks,
+        inheritanceTriggered: false,
+        privacyRespected: false
       };
 
       this.saveBeneficiaryNotification(notification);
@@ -282,7 +629,7 @@ class CheckinService {
     console.log(`Beneficiary alerts sent for user ${checkin.userId} to ${beneficiaries.length} beneficiaries`);
   }
 
-  // Trigger inheritance process
+  // Trigger inheritance process (original method)
   private async triggerInheritanceProcess(checkin: CheckinStatus): Promise<void> {
     const user = await this.getUserInfo(checkin.userId);
     const beneficiaries = await this.getUserBeneficiaries(checkin.userId);
@@ -322,7 +669,8 @@ class CheckinService {
         status: 'sent',
         message: `Inheritance process initiated for ${user.name} due to prolonged inactivity`,
         actionRequired: true,
-        inheritanceTriggered: true
+        inheritanceTriggered: true,
+        privacyRespected: false
       };
 
       this.saveBeneficiaryNotification(notification);
@@ -367,7 +715,7 @@ class CheckinService {
     }
   }
 
-  // Generate reminder messages
+  // Generate reminder messages (updated to include privacy info)
   private generateUpcomingReminderMessage(userName: string, daysUntilDue: number, dueDate: string): string {
     const dueDateFormatted = new Date(dueDate).toLocaleDateString();
     
@@ -400,9 +748,16 @@ class CheckinService {
             <h4 style="color: #374151; margin: 0 0 10px 0;">📋 What happens if you don't check in?</h4>
             <ul style="color: #6b7280; margin: 0; padding-left: 20px;">
               <li>You'll receive additional reminders</li>
-              <li>After ${this.GRACE_PERIOD_DAYS} days past due, your beneficiaries will be alerted</li>
-              <li>If no response after ${this.MAX_REMINDERS} reminders, inheritance processes may be triggered</li>
+              <li>After ${this.GRACE_PERIOD_DAYS} days past due, inheritance processes may be triggered based on your privacy preferences</li>
+              <li>Your beneficiaries will be notified according to your privacy settings</li>
             </ul>
+          </div>
+          
+          <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin: 20px 0;">
+            <p style="color: #0c4a6e; margin: 0; font-size: 14px;">
+              💡 <strong>Privacy Settings:</strong> You can update your privacy preferences in your account settings 
+              to control how and when your beneficiaries are notified.
+            </p>
           </div>
           
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
@@ -418,8 +773,15 @@ class CheckinService {
     daysPastDue: number, 
     daysRemaining: number,
     attemptNumber: number,
-    maxAttempts: number
+    maxAttempts: number,
+    privacyPreferences: CheckinPrivacyPreferences
   ): string {
+    const nextStepMessage = privacyPreferences.alertBeneficiariesWhenOverdue 
+      ? (privacyPreferences.inheritanceOnlyMode 
+          ? 'inheritance processes will be triggered directly'
+          : 'your beneficiaries will be alerted')
+      : 'inheritance processes will be triggered directly (per your privacy preferences)';
+
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -433,7 +795,7 @@ class CheckinService {
             <h3 style="color: #dc2626; margin: 0 0 10px 0;">⚠️ Your Heritage Vault check-in is ${daysPastDue} days overdue!</h3>
             <p style="color: #dc2626; margin: 0; font-weight: bold;">
               This is reminder ${attemptNumber} of ${maxAttempts}. 
-              ${daysRemaining > 0 ? `You have ${daysRemaining} days remaining before beneficiaries are alerted.` : 'Your beneficiaries will be notified soon.'}
+              ${daysRemaining > 0 ? `You have ${daysRemaining} days remaining before ${nextStepMessage}.` : `${nextStepMessage.charAt(0).toUpperCase() + nextStepMessage.slice(1)} soon.`}
             </p>
           </div>
           
@@ -450,9 +812,18 @@ class CheckinService {
           <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
             <h4 style="color: #92400e; margin: 0 0 10px 0;">⚡ What happens next?</h4>
             <ul style="color: #92400e; margin: 0; padding-left: 20px;">
-              <li>If you don't respond within ${daysRemaining} days, your beneficiaries will be contacted</li>
+              <li>If you don't respond within ${daysRemaining} days, ${nextStepMessage}</li>
               <li>After ${maxAttempts} failed reminders, inheritance processes will be automatically triggered</li>
               <li>Your assets will begin the release process to designated beneficiaries</li>
+            </ul>
+          </div>
+
+          <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin: 20px 0;">
+            <h4 style="color: #0c4a6e; margin: 0 0 10px 0;">🔒 Your Privacy Settings:</h4>
+            <ul style="color: #0c4a6e; margin: 0; padding-left: 20px; font-size: 14px;">
+              <li>Beneficiary alerts when overdue: ${privacyPreferences.alertBeneficiariesWhenOverdue ? 'Enabled' : 'Disabled'}</li>
+              <li>Alert type: ${privacyPreferences.alertType === 'direct_inheritance' ? 'Direct inheritance' : 'Concern-based'}</li>
+              <li>Inheritance-only mode: ${privacyPreferences.inheritanceOnlyMode ? 'Enabled' : 'Disabled'}</li>
             </ul>
           </div>
           
@@ -473,8 +844,30 @@ class CheckinService {
     beneficiaryName: string,
     relationship: string,
     daysPastDue: number,
-    gracePeriod: number
+    gracePeriod: number,
+    allowWellnessChecks: boolean
   ): string {
+    const actionSection = allowWellnessChecks ? `
+      <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h4 style="color: #1e40af; margin: 0 0 15px 0;">📞 Recommended Actions:</h4>
+        <ul style="color: #1e40af; margin: 0; padding-left: 20px; line-height: 1.6;">
+          <li><strong>Contact ${userName} directly</strong> to check on their wellbeing</li>
+          <li>Ask if they need help accessing their Heritage Vault account</li>
+          <li>Verify they are aware of the check-in requirement</li>
+          <li>If you cannot reach them, consider contacting other family members</li>
+        </ul>
+      </div>
+    ` : `
+      <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h4 style="color: #0c4a6e; margin: 0 0 15px 0;">ℹ️ Information Only:</h4>
+        <p style="color: #0c4a6e; margin: 0; line-height: 1.6;">
+          ${userName} has configured their privacy settings to limit wellness check requests. 
+          This notification is for your information only. If inheritance processes are triggered, 
+          you will receive detailed instructions.
+        </p>
+      </div>
+    `;
+
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -505,15 +898,7 @@ class CheckinService {
             </ul>
           </div>
           
-          <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h4 style="color: #1e40af; margin: 0 0 15px 0;">📞 Recommended Actions:</h4>
-            <ul style="color: #1e40af; margin: 0; padding-left: 20px; line-height: 1.6;">
-              <li><strong>Contact ${userName} directly</strong> to check on their wellbeing</li>
-              <li>Ask if they need help accessing their Heritage Vault account</li>
-              <li>Verify they are aware of the check-in requirement</li>
-              <li>If you cannot reach them, consider contacting other family members</li>
-            </ul>
-          </div>
+          ${actionSection}
           
           <div style="background: #fef2f2; border: 1px solid #dc2626; border-radius: 8px; padding: 20px; margin: 20px 0;">
             <h4 style="color: #dc2626; margin: 0 0 10px 0;">⏰ Timeline:</h4>
@@ -524,8 +909,8 @@ class CheckinService {
           </div>
           
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            This notification is part of Heritage Vault's safety protocols. If you have questions or concerns, 
-            please contact our support team at support@heritagevault.com.
+            This notification is part of Heritage Vault's safety protocols and respects ${userName}'s privacy preferences. 
+            If you have questions or concerns, please contact our support team at support@heritagevault.com.
           </p>
         </div>
       </div>
@@ -568,28 +953,10 @@ class CheckinService {
             </ul>
           </div>
           
-          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h4 style="color: #92400e; margin: 0 0 15px 0;">📋 Required Actions:</h4>
-            <ul style="color: #92400e; margin: 0; padding-left: 20px; line-height: 1.6;">
-              <li>Verify your identity and relationship to ${userName}</li>
-              <li>Provide any required legal documentation</li>
-              <li>Review and acknowledge asset transfer details</li>
-              <li>Complete any knowledge verification tests if required</li>
-            </ul>
-          </div>
-          
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.getInheritancePortalUrl()}" style="background: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
               🏛️ Access Inheritance Portal
             </a>
-          </div>
-          
-          <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h4 style="color: #374151; margin: 0 0 10px 0;">📞 Support & Assistance</h4>
-            <p style="color: #6b7280; margin: 0;">
-              Our inheritance specialists are available to help you through this process. 
-              Contact us at inheritance@heritagevault.com or call our dedicated inheritance support line.
-            </p>
           </div>
           
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
@@ -779,4 +1146,4 @@ class CheckinService {
 // Create singleton instance
 export const checkinService = new CheckinService();
 
-export type { CheckinStatus, CheckinReminder, BeneficiaryNotification };
+export type { CheckinStatus, CheckinReminder, BeneficiaryNotification, CheckinPrivacyPreferences };
