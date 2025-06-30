@@ -282,7 +282,15 @@ class SupabaseAuthService {
   async getCurrentUser() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      
+      // Handle case where no user session exists
+      if (error) {
+        if (error.message === 'Auth session missing!' || error.message.includes('session')) {
+          return null;
+        }
+        throw error;
+      }
+      
       return user;
     } catch (error) {
       console.error('Get current user error:', error);
@@ -299,7 +307,14 @@ class SupabaseAuthService {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      // Handle case where no profile exists (PGRST116 = no rows returned)
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
+      
       return data;
     } catch (error) {
       console.error('Get user profile error:', error);
