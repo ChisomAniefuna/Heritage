@@ -1,12 +1,13 @@
 import React from 'react';
-import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic } from 'lucide-react';
+import { Shield, Lock, Users, FileText, Wallet, ArrowRight, Check, Star, Heart, Clock, MessageSquare, User, Mic, UserPlus } from 'lucide-react';
 
 interface HomepageProps {
   onLogin: () => void;
   onViewPricing: () => void;
+  onSignUp: () => void;
 }
 
-const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
+const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing, onSignUp }) => {
   const features = [
     {
       icon: Wallet,
@@ -100,9 +101,15 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
               </button>
               <button
                 onClick={onLogin}
-                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors text-sm font-medium"
+                className="text-purple-700 hover:text-purple-800 px-3 py-2 text-sm font-medium transition-colors"
               >
                 Sign In
+              </button>
+              <button
+                onClick={onSignUp}
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors text-sm font-medium"
+              >
+                Get Started
               </button>
             </div>
           </div>
@@ -145,11 +152,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={onLogin}
+                onClick={onSignUp}
                 className="bg-purple-700 text-white px-8 py-4 rounded-lg hover:bg-purple-800 transition-all duration-200 text-lg font-semibold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
+                <UserPlus className="w-5 h-5" />
                 <span>Start Free Forever</span>
-                <ArrowRight className="w-5 h-5" />
               </button>
               <button 
                 onClick={onViewPricing}
@@ -409,11 +416,11 @@ const Homepage: React.FC<HomepageProps> = ({ onLogin, onViewPricing }) => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <button
-              onClick={onLogin}
+              onClick={onSignUp}
               className="bg-white text-purple-800 px-8 py-4 rounded-lg hover:bg-purple-50 transition-all duration-200 text-lg font-semibold inline-flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
+              <UserPlus className="w-5 h-5" />
               <span>Start Free Forever</span>
-              <ArrowRight className="w-5 h-5" />
             </button>
             <button className="border-2 border-purple-300 text-purple-100 px-8 py-4 rounded-lg hover:border-white hover:text-white transition-all duration-200 text-lg font-semibold">
               Watch Demo

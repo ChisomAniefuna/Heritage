@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -10,231 +10,145 @@ import NotificationRulesView from './components/NotificationRulesView';
 import Homepage from './components/Homepage';
 import PricingPage from './components/PricingPage';
 import CheckinPage from './components/CheckinPage';
+import SignUpPage from './components/SignUpPage';
+import SignInPage from './components/SignInPage';
 import { Asset, Contact, Document, InheritanceEvent, NotificationRule } from './types';
+import { supabaseAuth, supabaseData, User } from './services/supabase';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app' | 'checkin'>('homepage');
+  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app' | 'checkin' | 'signup' | 'signin'>('homepage');
   const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('dashboard');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [assets, setAssets] = useState<Asset[]>([
-    {
-      id: '1',
-      name: 'Primary Checking Account - Chase Bank',
-      category: 'financial',
-      type: 'Bank Account',
-      value: '$15,240',
-      location: 'Chase Bank - Account #****1234',
-      instructions: 'Main checking account for daily expenses. Online banking credentials stored in password manager.',
-      beneficiaries: ['Onyedika Aniefuna', 'Maryjane Aniefuna'],
-      dateAdded: '2024-01-15',
-      lastUpdated: '2024-12-20',
-      releaseConditions: [
-        {
-          id: '1',
-          type: 'death_certificate',
-          description: 'Require official death certificate before release',
-          parameters: { legalDocumentRequired: true },
-          status: 'pending',
-          createdDate: '2024-01-15'
-        },
-        {
-          id: '2',
-          type: 'time_delay',
-          description: 'Wait 30 days after death certificate verification',
-          parameters: { delayDays: 30 },
-          status: 'pending',
-          createdDate: '2024-01-15'
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Investment Portfolio - Fidelity',
-      category: 'financial',
-      type: 'Investment Account',
-      value: '$125,000',
-      location: 'Fidelity Investments - Account #****5678',
-      instructions: 'Diversified portfolio including stocks, bonds, and mutual funds. Contact advisor John Smith at (555) 123-4567.',
-      beneficiaries: ['Onyedika Aniefuna'],
-      dateAdded: '2024-01-10',
-      lastUpdated: '2024-12-18',
-      releaseConditions: [
-        {
-          id: '3',
-          type: 'multi_party_approval',
-          description: 'Require approval from spouse and attorney',
-          parameters: { 
-            requiredApprovers: ['Onyedika Aniefuna', 'Robert Smith, Esq.'],
-            minimumApprovals: 2
-          },
-          status: 'pending',
-          createdDate: '2024-01-10'
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Family Home',
-      category: 'property',
-      type: 'Real Estate',
-      value: '$450,000',
-      location: '123 Oak Street, Springfield, IL 62701',
-      instructions: 'Primary residence. Deed and mortgage documents in safety deposit box at First National Bank.',
-      beneficiaries: ['Onyedika Aniefuna', 'Maryjane Aniefuna'],
-      dateAdded: '2024-01-05',
-      lastUpdated: '2024-12-15'
-    },
-    {
-      id: '4',
-      name: 'Google Photos & Drive',
-      category: 'digital',
-      type: 'Cloud Storage',
-      value: 'Priceless',
-      location: 'Google Account: aniefuna.chisom@gmail.com',
-      instructions: 'Contains family photos, important documents, and personal files. Enable legacy contact feature.',
-      beneficiaries: ['Onyedika Aniefuna'],
-      dateAdded: '2024-01-20',
-      lastUpdated: '2024-12-10',
-      releaseConditions: [
-        {
-          id: '4',
-          type: 'age_requirement',
-          description: 'Children must be 18 years old to access',
-          parameters: { requiredAge: 18 },
-          status: 'pending',
-          createdDate: '2024-01-20'
-        }
-      ]
-    }
-  ]);
+  // Data states - these will be loaded from Supabase
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [inheritanceEvents, setInheritanceEvents] = useState<InheritanceEvent[]>([]);
+  const [notificationRules, setNotificationRules] = useState<NotificationRule[]>([]);
 
-  const [contacts, setContacts] = useState<Contact[]>([
-    {
-      id: '1',
-      name: 'Onyedika Aniefuna',
-      relationship: 'Sister',
-      email: 'onyedika.aniefuna@email.com',
-      phone: '+234 803 123 4567',
-      address: '456 Pine Avenue, Lagos, Nigeria',
-      isPrimaryBeneficiary: true,
-      dateAdded: '2024-01-15',
-      emergencyContact: true,
-      verificationMethod: 'email'
-    },
-    {
-      id: '2',
-      name: 'Maryjane Aniefuna',
-      relationship: 'Sister',
-      email: 'maryjane.aniefuna@email.com',
-      phone: '(555) 987-6543',
-      address: '789 Elm Street, Chicago, IL 60601',
-      isPrimaryBeneficiary: true,
-      dateAdded: '2024-01-15',
-      verificationMethod: 'phone'
-    },
-    {
-      id: '3',
-      name: 'Robert Smith, Esq.',
-      relationship: 'Attorney',
-      email: 'robert@smithlaw.com',
-      phone: '(555) 555-0123',
-      address: '789 Legal Lane, Springfield, IL 62701',
-      isPrimaryBeneficiary: false,
-      dateAdded: '2024-01-20',
-      verificationMethod: 'legal'
-    }
-  ]);
+  useEffect(() => {
+    // Check for existing session on app load
+    checkAuthState();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabaseAuth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await handleUserSignIn(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        handleUserSignOut();
+      }
+    });
 
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: '1',
-      name: 'Last Will and Testament',
-      category: 'legal',
-      type: 'PDF',
-      size: '2.4 MB',
-      location: 'Safety Deposit Box + Digital Copy',
-      description: 'Primary will document outlining asset distribution and guardianship arrangements.',
-      dateAdded: '2024-01-10',
-      lastUpdated: '2024-12-01',
-      accessLevel: 'conditional'
-    },
-    {
-      id: '2',
-      name: 'Power of Attorney',
-      category: 'legal',
-      type: 'PDF',
-      size: '1.8 MB',
-      location: 'Attorney Office + Home Safe',
-      description: 'Durable power of attorney for financial and healthcare decisions.',
-      dateAdded: '2024-01-10',
-      lastUpdated: '2024-11-15',
-      accessLevel: 'immediate'
-    },
-    {
-      id: '3',
-      name: 'Insurance Policies',
-      category: 'insurance',
-      type: 'PDF',
-      size: '5.2 MB',
-      location: 'Home Office Filing Cabinet',
-      description: 'Life, health, auto, and homeowners insurance policy documents.',
-      dateAdded: '2024-01-12',
-      lastUpdated: '2024-12-05',
-      accessLevel: 'conditional'
-    }
-  ]);
+    return () => subscription.unsubscribe();
+  }, []);
 
-  const [inheritanceEvents, setInheritanceEvents] = useState<InheritanceEvent[]>([
-    {
-      id: '1',
-      type: 'asset_release',
-      assetId: '1',
-      beneficiaryId: '1',
-      status: 'pending',
-      triggeredDate: '2024-12-20',
-      notes: 'Awaiting death certificate verification'
-    },
-    {
-      id: '2',
-      type: 'notification_sent',
-      beneficiaryId: '2',
-      status: 'completed',
-      triggeredDate: '2024-12-18',
-      completedDate: '2024-12-18',
-      notes: 'Emergency contact notification sent successfully'
-    },
-    {
-      id: '3',
-      type: 'verification_required',
-      assetId: '2',
-      beneficiaryId: '1',
-      status: 'in_progress',
-      triggeredDate: '2024-12-19',
-      notes: 'Multi-party approval process initiated'
+  const checkAuthState = async () => {
+    try {
+      const user = await supabaseAuth.getCurrentUser();
+      if (user) {
+        await handleUserSignIn(user);
+      }
+    } catch (error) {
+      console.error('Error checking auth state:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
 
-  const [notificationRules, setNotificationRules] = useState<NotificationRule[]>([
-    {
-      id: '1',
-      name: 'Emergency Contact Alert',
-      trigger: 'immediate',
-      recipients: ['Onyedika Aniefuna', 'Robert Smith, Esq.'],
-      message: 'This is an automated notification regarding the Heritage Vault account. Please contact the designated executor for further instructions.',
-      frequency: 'once',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: 'Monthly Status Update',
-      trigger: 'time_based',
-      recipients: ['Onyedika Aniefuna'],
-      message: 'Monthly status update: All systems are functioning normally. No action required at this time.',
-      frequency: 'monthly',
-      isActive: true,
-      lastSent: '2024-11-20'
+  const handleUserSignIn = async (user: any) => {
+    setCurrentUser(user);
+    
+    // Load user profile
+    const profile = await supabaseAuth.getUserProfile(user.id);
+    setUserProfile(profile);
+    
+    // Load user data
+    await loadUserData(user.id);
+    
+    setCurrentPage('app');
+    setCurrentView('dashboard');
+  };
+
+  const handleUserSignOut = () => {
+    setCurrentUser(null);
+    setUserProfile(null);
+    setAssets([]);
+    setContacts([]);
+    setDocuments([]);
+    setInheritanceEvents([]);
+    setNotificationRules([]);
+    setCurrentPage('homepage');
+    setCurrentView('dashboard');
+  };
+
+  const loadUserData = async (userId: string) => {
+    try {
+      // Load all user data from Supabase
+      const [userAssets, userContacts, userDocuments] = await Promise.all([
+        supabaseData.getUserAssets(userId),
+        supabaseData.getUserContacts(userId),
+        supabaseData.getUserDocuments(userId)
+      ]);
+
+      // Convert Supabase data to app format
+      setAssets(userAssets.map(asset => ({
+        id: asset.id,
+        name: asset.name,
+        category: asset.category,
+        type: asset.type,
+        value: asset.value,
+        location: asset.location,
+        instructions: asset.instructions,
+        beneficiaries: asset.beneficiaries || [],
+        dateAdded: asset.created_at.split('T')[0],
+        lastUpdated: asset.updated_at.split('T')[0],
+        releaseConditions: asset.release_conditions || []
+      })));
+
+      setContacts(userContacts.map(contact => ({
+        id: contact.id,
+        name: contact.name,
+        relationship: contact.relationship,
+        email: contact.email,
+        phone: contact.phone,
+        address: contact.address,
+        isPrimaryBeneficiary: contact.is_primary_beneficiary,
+        dateAdded: contact.created_at.split('T')[0],
+        emergencyContact: contact.is_emergency_contact,
+        verificationMethod: contact.verification_method
+      })));
+
+      setDocuments(userDocuments.map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        category: doc.category,
+        type: doc.type,
+        size: doc.size,
+        location: doc.location,
+        description: doc.description,
+        dateAdded: doc.created_at.split('T')[0],
+        lastUpdated: doc.updated_at.split('T')[0],
+        accessLevel: doc.access_level
+      })));
+
+      // Mock inheritance events and notification rules for now
+      setInheritanceEvents([]);
+      setNotificationRules([]);
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
-  ]);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabaseAuth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const handleUpdateEvent = (updatedEvent: InheritanceEvent) => {
     setInheritanceEvents(events => 
@@ -265,8 +179,11 @@ function App() {
   };
 
   const handleLogin = () => {
-    setCurrentPage('app');
-    setCurrentView('dashboard');
+    setCurrentPage('signin');
+  };
+
+  const handleSignUp = () => {
+    setCurrentPage('signup');
   };
 
   const handleGoHome = () => {
@@ -324,12 +241,44 @@ function App() {
     }
   };
 
+  // Show loading screen while checking auth state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading Heritage Vault...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (currentPage === 'homepage') {
-    return <Homepage onLogin={handleLogin} onViewPricing={handleViewPricing} />;
+    return <Homepage onLogin={handleLogin} onViewPricing={handleViewPricing} onSignUp={handleSignUp} />;
   }
 
   if (currentPage === 'pricing') {
     return <PricingPage onBack={handleBackToHome} onLogin={handleLogin} />;
+  }
+
+  if (currentPage === 'signup') {
+    return (
+      <SignUpPage 
+        onBack={handleBackToHome}
+        onSignUpSuccess={handleUserSignIn}
+        onSwitchToSignIn={() => setCurrentPage('signin')}
+      />
+    );
+  }
+
+  if (currentPage === 'signin') {
+    return (
+      <SignInPage 
+        onBack={handleBackToHome}
+        onSignInSuccess={handleUserSignIn}
+        onSwitchToSignUp={() => setCurrentPage('signup')}
+      />
+    );
   }
 
   if (currentPage === 'checkin') {
@@ -338,7 +287,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header onGoHome={handleGoHome} />
+      <Header 
+        onGoHome={handleGoHome} 
+        onSignOut={handleSignOut}
+        currentUser={currentUser}
+        userProfile={userProfile}
+      />
       <div className="flex">
         <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
         <main className="flex-1 p-6">
