@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MoreVertical, Edit, Trash2, DollarSign, Building, Smartphone, Heart, FileText, Users, MapPin, FileCheck, Settings, Clock } from 'lucide-react';
 import { Asset, Contact } from '../types';
+import AssetSecurityBadge from './AssetSecurityBadge';
 
 interface AssetCardProps {
   asset: Asset;
@@ -120,6 +121,11 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, contacts, onUpdate, onDele
             </span>
           </div>
         )}
+
+        {/* Blockchain Security Badge */}
+        <div className="pt-2 border-t border-slate-100">
+          <AssetSecurityBadge asset={asset} />
+        </div>
 
         <div className="pt-2 border-t border-slate-100">
           <p className="text-xs text-slate-500">

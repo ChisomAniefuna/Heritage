@@ -12,6 +12,7 @@ export interface Asset {
   releaseConditions?: ReleaseCondition[];
   accessInstructions?: AccessInstruction[];
   knowledgeVerification?: KnowledgeVerification;
+  blockchainProof?: AssetProof; // New field for blockchain security
 }
 
 export interface Contact {
@@ -25,6 +26,7 @@ export interface Contact {
   dateAdded: string;
   emergencyContact?: boolean;
   verificationMethod?: 'email' | 'phone' | 'legal' | 'biometric';
+  algorandAddress?: string; // New field for blockchain integration
 }
 
 export interface Document {
@@ -39,11 +41,12 @@ export interface Document {
   lastUpdated: string;
   accessLevel?: 'immediate' | 'conditional' | 'restricted';
   releaseConditions?: ReleaseCondition[];
+  blockchainProof?: AssetProof; // New field for blockchain security
 }
 
 export interface ReleaseCondition {
   id: string;
-  type: 'time_delay' | 'death_certificate' | 'legal_verification' | 'multi_party_approval' | 'specific_date' | 'age_requirement' | 'knowledge_verification';
+  type: 'time_delay' | 'death_certificate' | 'legal_verification' | 'multi_party_approval' | 'specific_date' | 'age_requirement' | 'knowledge_verification' | 'blockchain_timelock';
   description: string;
   parameters: {
     delayDays?: number;
@@ -55,6 +58,8 @@ export interface ReleaseCondition {
     knowledgeTestId?: string;
     passingScore?: number;
     maxAttempts?: number;
+    blockchainTxId?: string; // New field for blockchain-based conditions
+    releaseTimestamp?: number; // New field for blockchain time locks
   };
   status: 'pending' | 'active' | 'completed' | 'failed';
   createdDate: string;
@@ -73,7 +78,7 @@ export interface AccessInstruction {
 
 export interface InheritanceEvent {
   id: string;
-  type: 'asset_release' | 'document_access' | 'notification_sent' | 'verification_required' | 'knowledge_test_required';
+  type: 'asset_release' | 'document_access' | 'notification_sent' | 'verification_required' | 'knowledge_test_required' | 'blockchain_verification';
   assetId?: string;
   documentId?: string;
   beneficiaryId: string;
@@ -82,6 +87,7 @@ export interface InheritanceEvent {
   completedDate?: string;
   notes?: string;
   knowledgeTestResult?: KnowledgeTestResult;
+  blockchainTxId?: string; // New field for blockchain events
 }
 
 export interface NotificationRule {
@@ -95,7 +101,25 @@ export interface NotificationRule {
   lastSent?: string;
 }
 
-// New Knowledge Verification Types
+// New Blockchain-related types
+export interface AssetProof {
+  assetId: string;
+  hash: string;
+  timestamp: number;
+  transactionId: string;
+  blockNumber: number;
+  verified?: boolean;
+}
+
+export interface BlockchainSecurity {
+  isEnabled: boolean;
+  walletAddress?: string;
+  networkStatus: 'connected' | 'disconnected' | 'syncing';
+  lastVerification?: string;
+  totalSecuredAssets: number;
+}
+
+// Existing Knowledge Verification Types
 export interface KnowledgeVerification {
   id: string;
   title: string;
