@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: ['algosdk'],
   },
   define: {
     global: 'globalThis',
