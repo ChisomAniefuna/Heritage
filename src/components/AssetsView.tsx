@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, DollarSign, Building, Smartphone, Heart, FileText } from 'lucide-react';
+import { Plus, Search, Filter, DollarSign, Building, Smartphone, Heart, FileText, Mail } from 'lucide-react';
 import { Asset, Contact, ReleaseCondition } from '../types';
 import AssetCard from './AssetCard';
 import AddAssetModal from './AddAssetModal';
 import ConditionalReleaseModal from './ConditionalReleaseModal';
+import BankStatementScanner from './BankStatementScanner';
 
 interface AssetsViewProps {
   assets: Asset[];
@@ -16,6 +17,7 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showReleaseModal, setShowReleaseModal] = useState(false);
+  const [showBankScanner, setShowBankScanner] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const categories = [
@@ -84,13 +86,22 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
           <h2 className="text-2xl font-bold text-slate-900">Assets</h2>
           <p className="text-slate-600 mt-1">Manage your valuable assets and inheritance items</p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Asset</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setShowBankScanner(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Mail className="w-4 h-4" />
+            <span>Bank Scanner</span>
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center space-x-2 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Asset</span>
+          </button>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -152,15 +163,23 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
           <p className="text-slate-600 mb-4">
             {searchTerm || selectedCategory !== 'all' 
               ? 'Try adjusting your search or filters' 
-              : 'Get started by adding your first asset'}
+              : 'Get started by adding your first asset or scanning your email for bank statements'}
           </p>
           {!searchTerm && selectedCategory === 'all' && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
-            >
-              Add Your First Asset
-            </button>
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors"
+              >
+                Add Your First Asset
+              </button>
+              <button
+                onClick={() => setShowBankScanner(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Scan Email for Bank Statements
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -182,6 +201,12 @@ const AssetsView: React.FC<AssetsViewProps> = ({ assets, setAssets, contacts }) 
             setShowReleaseModal(false);
             setSelectedAsset(null);
           }}
+        />
+      )}
+
+      {showBankScanner && (
+        <BankStatementScanner
+          onClose={() => setShowBankScanner(false)}
         />
       )}
     </div>
