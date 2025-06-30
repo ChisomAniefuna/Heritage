@@ -15,10 +15,7 @@
     "react-dom": "^18.3.1",
     "elevenlabs": "^0.8.2",
     "axios": "^1.6.2",
-    "@revenuecat/purchases-js": "^2.3.0",
-    "algosdk": "^2.7.0",
-    "@algorandfoundation/algokit-utils": "^6.0.0",
-    "buffer": "^6.0.3"
+    "@revenuecat/purchases-js": "^2.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
