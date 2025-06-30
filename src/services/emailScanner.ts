@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { bankStatementNFTService, BankStatementNFTMetadata, NFTMintResult } from './nftService';
 
 // Email scanning configuration
 interface EmailConfig {
@@ -42,22 +43,16 @@ interface Transaction {
   balance: string;
 }
 
-interface OnChainRecord {
-  statementHash: string;
-  bankName: string;
-  accountNumber: string;
-  statementDate: string;
-  ipfsHash: string;
-  timestamp: number;
-  verified: boolean;
+interface NFTCreationResult {
+  statement: BankStatement;
+  nftResult: NFTMintResult;
+  success: boolean;
+  error?: string;
 }
 
 class EmailBankStatementScanner {
   private emailConfig: EmailConfig | null = null;
-  private web3Provider: ethers.Provider | null = null;
-  private wallet: ethers.Wallet | null = null;
-  private contractAddress: string = '';
-  private contractABI: any[] = [];
+  private ownerAddress: string = '';
 
   // Initialize email scanning
   async initializeEmailScanning(config: EmailConfig): Promise<void> {
@@ -68,19 +63,20 @@ class EmailBankStatementScanner {
     console.log('Email scanning initialized successfully');
   }
 
-  // Initialize blockchain connection
-  async initializeBlockchain(
+  // Initialize blockchain connection for NFTs
+  async initializeNFTService(
     privateKey: string,
     rpcUrl: string,
-    contractAddress: string,
-    contractABI: any[]
+    contractAddress: string
   ): Promise<void> {
-    this.web3Provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.wallet = new ethers.Wallet(privateKey, this.web3Provider);
-    this.contractAddress = contractAddress;
-    this.contractABI = contractABI;
+    // Initialize NFT service
+    await bankStatementNFTService.initialize(privateKey, rpcUrl, contractAddress);
     
-    console.log('Blockchain connection initialized');
+    // Get owner address from private key
+    const wallet = new ethers.Wallet(privateKey);
+    this.ownerAddress = wallet.address;
+    
+    console.log('NFT service initialized for address:', this.ownerAddress);
   }
 
   // Test email connection
@@ -283,82 +279,74 @@ class EmailBankStatementScanner {
     };
   }
 
-  // Upload to IPFS
-  private async uploadToIPFS(content: ArrayBuffer, metadata: any): Promise<string> {
-    try {
-      // This would integrate with IPFS
-      // For demonstration, we'll return a mock IPFS hash
-      const mockHash = `Qm${Math.random().toString(36).substr(2, 44)}`;
-      console.log('Uploaded to IPFS:', mockHash);
-      return mockHash;
-    } catch (error) {
-      console.error('IPFS upload failed:', error);
-      throw error;
-    }
-  }
-
-  // Upload statement to blockchain
-  async uploadStatementToBlockchain(statement: BankStatement): Promise<string> {
-    if (!this.wallet || !this.contractAddress) {
-      throw new Error('Blockchain not initialized');
+  // Convert statement to NFT
+  async convertStatementToNFT(statement: BankStatement): Promise<NFTMintResult> {
+    if (!this.ownerAddress) {
+      throw new Error('NFT service not initialized');
     }
 
     try {
-      // Upload file to IPFS first
-      const ipfsHash = await this.uploadToIPFS(statement.fileContent, {
+      // Check if statement already exists as NFT
+      const existingTokenId = await bankStatementNFTService.statementExistsAsNFT(statement.fileHash);
+      if (existingTokenId) {
+        throw new Error(`Statement already exists as NFT with token ID: ${existingTokenId}`);
+      }
+
+      // Determine statement type based on period
+      const statementType = this.determineStatementType(statement.extractedData.period);
+
+      // Prepare NFT metadata
+      const nftMetadata: BankStatementNFTMetadata = {
         bankName: statement.bankName,
         accountNumber: statement.accountNumber,
         statementDate: statement.statementDate,
-        fileName: statement.fileName
-      });
-
-      // Create contract instance
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.contractABI,
-        this.wallet
-      );
-
-      // Prepare transaction data
-      const onChainRecord: OnChainRecord = {
-        statementHash: statement.fileHash,
-        bankName: statement.bankName,
-        accountNumber: statement.accountNumber,
-        statementDate: statement.statementDate,
-        ipfsHash,
-        timestamp: Math.floor(Date.now() / 1000),
-        verified: true
+        statementPeriod: `${statement.extractedData.period.from} to ${statement.extractedData.period.to}`,
+        balance: statement.extractedData.balance,
+        transactionCount: statement.extractedData.transactions.length,
+        fileHash: statement.fileHash,
+        ipfsHash: '', // Will be set during NFT creation
+        statementType
       };
 
-      // Submit transaction to blockchain
-      const tx = await contract.uploadStatement(
-        onChainRecord.statementHash,
-        onChainRecord.bankName,
-        onChainRecord.accountNumber,
-        onChainRecord.statementDate,
-        onChainRecord.ipfsHash,
-        onChainRecord.timestamp
+      // Convert to NFT
+      const nftResult = await bankStatementNFTService.convertStatementToNFT(
+        statement.fileContent,
+        nftMetadata,
+        this.ownerAddress
       );
 
-      await tx.wait();
-      console.log('Statement uploaded to blockchain:', tx.hash);
-      
-      return tx.hash;
+      console.log('Statement converted to NFT:', nftResult);
+      return nftResult;
     } catch (error) {
-      console.error('Blockchain upload failed:', error);
+      console.error('Error converting statement to NFT:', error);
       throw error;
     }
   }
 
-  // Monthly automated scan
-  async performMonthlyScan(): Promise<{
+  // Determine statement type based on period
+  private determineStatementType(period: { from: string; to: string }): 'monthly' | 'quarterly' | 'annual' {
+    const fromDate = new Date(period.from);
+    const toDate = new Date(period.to);
+    const daysDiff = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff <= 35) {
+      return 'monthly';
+    } else if (daysDiff <= 100) {
+      return 'quarterly';
+    } else {
+      return 'annual';
+    }
+  }
+
+  // Monthly automated scan and NFT creation
+  async performMonthlyNFTScan(): Promise<{
     scannedStatements: BankStatement[];
-    uploadedStatements: string[];
+    createdNFTs: NFTCreationResult[];
     errors: string[];
   }> {
     const results = {
       scannedStatements: [] as BankStatement[],
-      uploadedStatements: [] as string[],
+      createdNFTs: [] as NFTCreationResult[],
       errors: [] as string[]
     };
 
@@ -370,100 +358,86 @@ class EmailBankStatementScanner {
       const statements = await this.scanForBankStatements(lastMonth, new Date());
       results.scannedStatements = statements;
 
-      // Upload each statement to blockchain
+      // Convert each statement to NFT
       for (const statement of statements) {
         try {
-          const txHash = await this.uploadStatementToBlockchain(statement);
-          results.uploadedStatements.push(txHash);
+          const nftResult = await this.convertStatementToNFT(statement);
+          results.createdNFTs.push({
+            statement,
+            nftResult,
+            success: true
+          });
         } catch (error) {
-          results.errors.push(`Failed to upload ${statement.fileName}: ${error}`);
+          results.createdNFTs.push({
+            statement,
+            nftResult: {} as NFTMintResult,
+            success: false,
+            error: `Failed to create NFT for ${statement.fileName}: ${error}`
+          });
+          results.errors.push(`Failed to create NFT for ${statement.fileName}: ${error}`);
         }
       }
 
-      console.log(`Monthly scan completed: ${statements.length} statements found, ${results.uploadedStatements.length} uploaded`);
+      console.log(`Monthly NFT scan completed: ${statements.length} statements found, ${results.createdNFTs.filter(r => r.success).length} NFTs created`);
       return results;
     } catch (error) {
-      results.errors.push(`Monthly scan failed: ${error}`);
+      results.errors.push(`Monthly NFT scan failed: ${error}`);
       return results;
     }
   }
 
-  // Get statement verification status from blockchain
-  async getStatementVerificationStatus(statementHash: string): Promise<OnChainRecord | null> {
-    if (!this.web3Provider || !this.contractAddress) {
-      throw new Error('Blockchain not initialized');
+  // Get NFT collection for user
+  async getUserNFTCollection(): Promise<{
+    tokenIds: number[];
+    totalSupply: number;
+    nfts: Array<{
+      tokenId: number;
+      metadata: BankStatementNFTMetadata | null;
+      tokenURI: string | null;
+      openseaUrl: string;
+    }>;
+  }> {
+    if (!this.ownerAddress) {
+      throw new Error('NFT service not initialized');
     }
 
     try {
-      const contract = new ethers.Contract(
-        this.contractAddress,
-        this.contractABI,
-        this.web3Provider
+      const tokenIds = await bankStatementNFTService.getNFTsByOwner(this.ownerAddress);
+      const totalSupply = await bankStatementNFTService.getTotalSupply();
+      
+      const nfts = await Promise.all(
+        tokenIds.map(async (tokenId) => {
+          const metadata = await bankStatementNFTService.getNFTMetadata(tokenId);
+          const tokenURI = await bankStatementNFTService.getTokenURI(tokenId);
+          
+          return {
+            tokenId,
+            metadata,
+            tokenURI,
+            openseaUrl: this.generateOpenSeaUrl(tokenId)
+          };
+        })
       );
 
-      const record = await contract.getStatement(statementHash);
-      
-      if (record && record.timestamp > 0) {
-        return {
-          statementHash: record.statementHash,
-          bankName: record.bankName,
-          accountNumber: record.accountNumber,
-          statementDate: record.statementDate,
-          ipfsHash: record.ipfsHash,
-          timestamp: record.timestamp,
-          verified: record.verified
-        };
-      }
-
-      return null;
+      return {
+        tokenIds,
+        totalSupply,
+        nfts
+      };
     } catch (error) {
-      console.error('Error getting verification status:', error);
-      return null;
+      console.error('Error getting user NFT collection:', error);
+      throw error;
     }
+  }
+
+  // Generate OpenSea URL (simplified)
+  private generateOpenSeaUrl(tokenId: number): string {
+    // This would be more sophisticated in production
+    return `https://opensea.io/assets/ethereum/${bankStatementNFTService['contractAddress']}/${tokenId}`;
   }
 }
 
 // Create singleton instance
 export const emailBankStatementScanner = new EmailBankStatementScanner();
 
-// Smart contract ABI for bank statement storage
-export const BANK_STATEMENT_CONTRACT_ABI = [
-  {
-    "inputs": [
-      {"name": "_statementHash", "type": "string"},
-      {"name": "_bankName", "type": "string"},
-      {"name": "_accountNumber", "type": "string"},
-      {"name": "_statementDate", "type": "string"},
-      {"name": "_ipfsHash", "type": "string"},
-      {"name": "_timestamp", "type": "uint256"}
-    ],
-    "name": "uploadStatement",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "_statementHash", "type": "string"}],
-    "name": "getStatement",
-    "outputs": [
-      {"name": "statementHash", "type": "string"},
-      {"name": "bankName", "type": "string"},
-      {"name": "accountNumber", "type": "string"},
-      {"name": "statementDate", "type": "string"},
-      {"name": "ipfsHash", "type": "string"},
-      {"name": "timestamp", "type": "uint256"},
-      {"name": "verified", "type": "bool"}
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "_owner", "type": "address"}],
-    "name": "getStatementsByOwner",
-    "outputs": [{"name": "", "type": "string[]"}],
-    "stateMutability": "view",
-    "type": "function"
-  }
-];
-
-export type { EmailConfig, BankStatement, Transaction, OnChainRecord };
+export type { EmailConfig, BankStatement, Transaction, NFTCreationResult };
