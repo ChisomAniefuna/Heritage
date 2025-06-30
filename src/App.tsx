@@ -12,11 +12,12 @@ import PricingPage from './components/PricingPage';
 import CheckinPage from './components/CheckinPage';
 import SignUpPage from './components/SignUpPage';
 import SignInPage from './components/SignInPage';
+import ProfilePage from './components/ProfilePage';
 import { Asset, Contact, Document, InheritanceEvent, NotificationRule } from './types';
 import { supabaseAuth, supabaseData, User } from './services/supabase';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app' | 'checkin' | 'signup' | 'signin'>('homepage');
+  const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app' | 'checkin' | 'signup' | 'signin' | 'profile'>('homepage');
   const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('dashboard');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
@@ -178,6 +179,10 @@ function App() {
     setNotificationRules(rules => rules.filter(rule => rule.id !== ruleId));
   };
 
+  const handleUpdateProfile = (updatedProfile: User) => {
+    setUserProfile(updatedProfile);
+  };
+
   const handleLogin = () => {
     setCurrentPage('signin');
   };
@@ -206,6 +211,10 @@ function App() {
   const handleBackFromCheckin = () => {
     setCurrentPage('app');
     setCurrentView('dashboard');
+  };
+
+  const handleGoToProfile = () => {
+    setCurrentPage('profile');
   };
 
   const renderCurrentView = () => {
@@ -285,6 +294,30 @@ function App() {
     return <CheckinPage onBack={handleBackFromCheckin} />;
   }
 
+  if (currentPage === 'profile') {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Header 
+          onGoHome={handleGoHome} 
+          onSignOut={handleSignOut}
+          currentUser={currentUser}
+          userProfile={userProfile}
+          onGoToProfile={handleGoToProfile}
+        />
+        <div className="flex">
+          <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+          <main className="flex-1 p-6">
+            <ProfilePage 
+              userProfile={userProfile} 
+              onSignOut={handleSignOut} 
+              onUpdateProfile={handleUpdateProfile} 
+            />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Header 
@@ -292,6 +325,7 @@ function App() {
         onSignOut={handleSignOut}
         currentUser={currentUser}
         userProfile={userProfile}
+        onGoToProfile={handleGoToProfile}
       />
       <div className="flex">
         <Sidebar currentView={currentView} setCurrentView={setCurrentView} />

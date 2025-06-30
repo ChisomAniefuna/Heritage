@@ -1,7 +1,9 @@
-import React from 'react';
-import { Wallet, Users, FileText, TrendingUp, Shield, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Wallet, Users, FileText, TrendingUp, Shield, Clock, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react';
 import { Asset, Contact, Document } from '../types';
 import CheckinManager from './CheckinManager';
+import SubscriptionManager from './SubscriptionManager';
+import { revenueCatService, UserSubscription, formatSubscriptionStatus } from '../services/revenuecat';
 
 interface DashboardProps {
   assets: Asset[];
@@ -10,6 +12,29 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) => {
+  const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+
+  useEffect(() => {
+    loadSubscriptionData();
+  }, []);
+
+  const loadSubscriptionData = async () => {
+    try {
+      if (revenueCatService.isConfigured()) {
+        await revenueCatService.initialize();
+        const userSubscription = await revenueCatService.getUserSubscription();
+        setSubscription(userSubscription);
+      }
+    } catch (error) {
+      console.error('Error loading subscription data:', error);
+    }
+  };
+
+  const handleSubscriptionChange = (updatedSubscription: UserSubscription) => {
+    setSubscription(updatedSubscription);
+  };
+
   const totalAssetValue = assets.reduce((total, asset) => {
     const value = asset.value.replace(/[^0-9.-]/g, '');
     return isNaN(parseFloat(value)) ? total : total + parseFloat(value);
@@ -43,6 +68,59 @@ const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) =>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Dashboard</h2>
         <p className="text-slate-600">Overview of your digital inheritance vault</p>
       </div>
+
+      {/* Subscription Banner */}
+      {subscription && (
+        <div className={`p-6 rounded-lg ${
+          subscription.plan === 'forever' 
+            ? 'bg-purple-50 border border-purple-200' 
+            : subscription.plan === 'pro'
+            ? 'bg-blue-50 border border-blue-200'
+            : 'bg-green-50 border border-green-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-full ${
+                subscription.plan === 'forever' 
+                  ? 'bg-purple-100' 
+                  : subscription.plan === 'pro'
+                  ? 'bg-blue-100'
+                  : 'bg-green-100'
+              }`}>
+                <Shield className={`w-6 h-6 ${
+                  subscription.plan === 'forever' 
+                    ? 'text-purple-600' 
+                    : subscription.plan === 'pro'
+                    ? 'text-blue-600'
+                    : 'text-green-600'
+                }`} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {subscription.plan === 'forever' 
+                    ? 'Lifetime Access' 
+                    : subscription.plan === 'pro'
+                    ? 'Pro Subscription'
+                    : 'Free Plan'}
+                </h3>
+                <p className="text-slate-600">
+                  {formatSubscriptionStatus(subscription)}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSubscriptionManager(true)}
+              className={`px-4 py-2 rounded-lg ${
+                subscription.plan === 'free'
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              {subscription.plan === 'free' ? 'Upgrade Plan' : 'Manage Subscription'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -156,6 +234,13 @@ const Dashboard: React.FC<DashboardProps> = ({ assets, contacts, documents }) =>
           </button>
         </div>
       </div>
+
+      {showSubscriptionManager && (
+        <SubscriptionManager
+          onClose={() => setShowSubscriptionManager(false)}
+          onSubscriptionChange={handleSubscriptionChange}
+        />
+      )}
     </div>
   );
 };

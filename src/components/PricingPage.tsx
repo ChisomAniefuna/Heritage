@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, Check, Crown, Gift, Infinity, Mic, User, Globe, ArrowLeft, Zap, Users } from 'lucide-react';
+import { revenueCatService, SubscriptionPlan } from '../services/revenuecat';
+import SubscriptionManager from './SubscriptionManager';
 
 interface PricingPageProps {
   onBack: () => void;
@@ -7,7 +9,8 @@ interface PricingPageProps {
 }
 
 const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
-  const pricingPlans = [
+  const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
+  const [pricingPlans, setPricingPlans] = useState([
     {
       name: 'Free Forever',
       price: '$0',
@@ -70,7 +73,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
       popular: false,
       badge: 'Best Value'
     }
-  ];
+  ]);
 
   const addOns = [
     {
@@ -103,6 +106,32 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
     'Training & onboarding',
     'Priority technical support'
   ];
+
+  useEffect(() => {
+    loadPlans();
+  }, []);
+
+  const loadPlans = async () => {
+    try {
+      if (revenueCatService.isConfigured()) {
+        await revenueCatService.initialize();
+        const plans = await revenueCatService.getSubscriptionPlans();
+        if (plans.length > 0) {
+          setPricingPlans(plans);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    }
+  };
+
+  const handlePricingButtonClick = (plan: any) => {
+    if (plan.name === 'Free Forever') {
+      onLogin();
+    } else {
+      setShowSubscriptionManager(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -166,65 +195,69 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <div key={index} className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 hover:shadow-xl ${
-                plan.popular 
-                  ? 'border-purple-700 relative transform scale-105' 
-                  : 'border-slate-200 hover:border-purple-300'
-              }`}>
-                {plan.badge && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className={`px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 ${
-                      plan.popular 
-                        ? 'bg-purple-700 text-white' 
-                        : plan.badge === 'Free' 
-                        ? 'bg-green-600 text-white'
-                        : 'bg-purple-700 text-white'
-                    }`}>
-                      {plan.badge === 'Most Popular' && <Crown className="w-4 h-4" />}
-                      {plan.badge === 'Free' && <Gift className="w-4 h-4" />}
-                      {plan.badge === 'Best Value' && <Infinity className="w-4 h-4" />}
-                      <span>{plan.badge}</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="p-8">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
-                    <p className="text-slate-700 mb-4">{plan.description}</p>
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
-                      <span className="text-slate-700 ml-1">{plan.period}</span>
-                    </div>
-                    {plan.yearlyPrice && (
-                      <div className="mt-2">
-                        <span className="text-lg text-green-600 font-semibold">
-                          or {plan.yearlyPrice}{plan.yearlyPeriod}
-                        </span>
-                        <span className="text-sm text-green-600 block">Save 2 months!</span>
+            {pricingPlans.map((plan, index) => {
+              const Badge = plan.badge === 'Most Popular' ? Crown : 
+                           plan.badge === 'Free' ? Gift : 
+                           plan.badge === 'Best Value' ? Infinity : null;
+              
+              return (
+                <div key={index} className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 hover:shadow-xl ${
+                  plan.popular 
+                    ? 'border-purple-700 relative transform scale-105' 
+                    : 'border-slate-200 hover:border-purple-300'
+                }`}>
+                  {plan.badge && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div className={`px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 ${
+                        plan.popular 
+                          ? 'bg-purple-700 text-white' 
+                          : plan.badge === 'Free' 
+                          ? 'bg-green-600 text-white'
+                          : 'bg-purple-700 text-white'
+                      }`}>
+                        {Badge && <Badge className="w-4 h-4" />}
+                        <span>{plan.badge}</span>
                       </div>
-                    )}
+                    </div>
+                  )}
+                  
+                  <div className="p-8">
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
+                      <p className="text-slate-700 mb-4">{plan.description}</p>
+                      <div className="flex items-baseline justify-center">
+                        <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
+                        <span className="text-slate-700 ml-1">{plan.period}</span>
+                      </div>
+                      {plan.yearlyPrice && (
+                        <div className="mt-2">
+                          <span className="text-lg text-green-600 font-semibold">
+                            or {plan.yearlyPrice}{plan.yearlyPeriod}
+                          </span>
+                          <span className="text-sm text-green-600 block">Save 2 months!</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <ul className="space-y-4 mb-8">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start space-x-3">
+                          <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span className="text-slate-800 text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button 
+                      onClick={() => handlePricingButtonClick(plan)}
+                      className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${plan.buttonStyle}`}
+                    >
+                      {plan.buttonText}
+                    </button>
                   </div>
-
-                  <ul className="space-y-4 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start space-x-3">
-                        <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-800 text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button 
-                    onClick={onLogin}
-                    className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${plan.buttonStyle}`}
-                  >
-                    {plan.buttonText}
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -370,6 +403,10 @@ const PricingPage: React.FC<PricingPageProps> = ({ onBack, onLogin }) => {
           </p>
         </div>
       </section>
+
+      {showSubscriptionManager && (
+        <SubscriptionManager onClose={() => setShowSubscriptionManager(false)} />
+      )}
     </div>
   );
 };

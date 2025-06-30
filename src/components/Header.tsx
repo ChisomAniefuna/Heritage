@@ -5,17 +5,25 @@ import { User as UserType } from '../services/supabase';
 interface HeaderProps {
   onGoHome?: () => void;
   onSignOut?: () => void;
+  onGoToProfile?: () => void;
   currentUser?: any;
   userProfile?: UserType | null;
 }
 
-const Header: React.FC<HeaderProps> = ({ onGoHome, onSignOut, currentUser, userProfile }) => {
+const Header: React.FC<HeaderProps> = ({ onGoHome, onSignOut, onGoToProfile, currentUser, userProfile }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleSignOut = () => {
     setShowUserMenu(false);
     if (onSignOut) {
       onSignOut();
+    }
+  };
+
+  const handleGoToProfile = () => {
+    setShowUserMenu(false);
+    if (onGoToProfile) {
+      onGoToProfile();
     }
   };
 
@@ -78,14 +86,17 @@ const Header: React.FC<HeaderProps> = ({ onGoHome, onSignOut, currentUser, userP
                     </div>
                   </div>
                   
-                  <button className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2">
-                    <Settings className="w-4 h-4" />
-                    <span>Account Settings</span>
+                  <button 
+                    onClick={handleGoToProfile}
+                    className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>My Profile</span>
                   </button>
                   
                   <button className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center space-x-2">
-                    <User className="w-4 h-4" />
-                    <span>Profile</span>
+                    <Settings className="w-4 h-4" />
+                    <span>Account Settings</span>
                   </button>
                   
                   <div className="border-t border-slate-200 mt-2 pt-2">

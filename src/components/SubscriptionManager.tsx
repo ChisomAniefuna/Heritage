@@ -13,6 +13,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [purchaseSuccess, setPurchaseSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     loadSubscriptionData();
@@ -53,6 +54,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
     try {
       setPurchasing(planId);
       setError(null);
+      setPurchaseSuccess(false);
 
       // Get offerings to find the package
       const offerings = await revenueCatService.getOfferings();
@@ -83,7 +85,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
       }
 
       // Show success message
-      alert('Purchase successful! Your subscription has been activated.');
+      setPurchaseSuccess(true);
       
     } catch (err: any) {
       console.error('Purchase failed:', err);
@@ -150,6 +152,28 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
         <div className="bg-white rounded-xl p-8 text-center">
           <Loader className="w-8 h-8 animate-spin text-purple-700 mx-auto mb-4" />
           <p className="text-slate-700">Loading subscription information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (purchaseSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Purchase Successful!</h2>
+          <p className="text-slate-600 mb-6">
+            Your subscription has been activated. Thank you for upgrading your Heritage Vault plan!
+          </p>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );
