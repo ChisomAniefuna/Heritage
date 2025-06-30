@@ -63,7 +63,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
       for (const offering of offerings) {
         if (offering.availablePackages) {
           packageToPurchase = offering.availablePackages.find(
-            pkg => pkg.product.identifier === planId
+            (pkg: any) => pkg.product.identifier === planId
           );
           if (packageToPurchase) break;
         }
@@ -239,6 +239,14 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ onClose, onSu
                         <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
                         <span className="text-slate-700 ml-1">{plan.period}</span>
                       </div>
+                      {plan.yearlyPrice && (
+                        <div className="mt-2">
+                          <span className="text-lg text-green-600 font-semibold">
+                            or {plan.yearlyPrice}{plan.yearlyPeriod}
+                          </span>
+                          <span className="text-sm text-green-600 block">Save 2 months!</span>
+                        </div>
+                      )}
                     </div>
 
                     <ul className="space-y-3 mb-6">

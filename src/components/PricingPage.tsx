@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Check, Crown, Gift, Infinity, Mic, User, Globe, ArrowLeft, Zap, Users } from 'lucide-react';
 import { revenueCatService, SubscriptionPlan } from '../services/revenuecat';
 import SubscriptionManager from './SubscriptionManager';

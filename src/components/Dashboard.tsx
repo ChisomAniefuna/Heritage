@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, Users, FileText, TrendingUp, Shield, Clock, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react';
 import { Asset, Contact, Document } from '../types';
 import CheckinManager from './CheckinManager';
