@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, AlertTriangle, Bell, Settings, Calendar, Users, Mail, Shield, Eye, EyeOff, Lock } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Bell, Settings, Calendar, Users, Mail, Shield, Eye, EyeOff, Lock, UserCheck, Briefcase } from 'lucide-react';
 import { checkinService, CheckinStatus, BeneficiaryNotification, CheckinPrivacyPreferences } from '../services/checkinService';
 import { notificationService } from '../services/notificationService';
 
@@ -16,38 +16,76 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [lastProcessedDate, setLastProcessedDate] = useState<Date | null>(null);
+  const [availableContacts, setAvailableContacts] = useState<any[]>([]);
   const [privacyPreferences, setPrivacyPreferences] = useState<CheckinPrivacyPreferences>({
     alertBeneficiariesWhenOverdue: true,
     alertType: 'concern',
     allowWellnessChecks: true,
     inheritanceOnlyMode: false,
-    customMessage: undefined
+    customMessage: undefined,
+    useProfessionalContactsOnly: false,
+    professionalContactIds: [],
+    professionalConcernMessage: undefined,
+    separateProfessionalAndFamily: true
   });
 
   useEffect(() => {
     loadCheckinData();
     checkPushNotificationStatus();
+    loadAvailableContacts();
   }, [userId]);
 
   const loadCheckinData = async () => {
     try {
-      // Load current check-in status
       let status = await checkinService.getUserCheckinStatus(userId);
       
       if (!status) {
-        // Initialize check-in for new user with default privacy preferences
         status = await checkinService.initializeUserCheckin(userId, userEmail, privacyPreferences);
       }
       
       setCheckinStatus(status);
       setPrivacyPreferences(status.privacyPreferences);
 
-      // Load notifications
       const userNotifications = await checkinService.getAllUserNotifications(userId);
       setNotifications(userNotifications);
     } catch (error) {
       console.error('Error loading check-in data:', error);
     }
+  };
+
+  const loadAvailableContacts = async () => {
+    // This would load from your contacts service
+    const contacts = [
+      {
+        id: '1',
+        name: 'Onyedika Aniefuna',
+        relationship: 'Sister',
+        email: 'onyedika.aniefuna@email.com',
+        isProfessional: false
+      },
+      {
+        id: '2',
+        name: 'Maryjane Aniefuna',
+        relationship: 'Sister',
+        email: 'maryjane.aniefuna@email.com',
+        isProfessional: false
+      },
+      {
+        id: '3',
+        name: 'Robert Smith, Esq.',
+        relationship: 'Attorney',
+        email: 'robert@smithlaw.com',
+        isProfessional: true
+      },
+      {
+        id: '4',
+        name: 'Dr. Sarah Johnson',
+        relationship: 'Family Doctor',
+        email: 'sarah.johnson@medical.com',
+        isProfessional: true
+      }
+    ];
+    setAvailableContacts(contacts);
   };
 
   const checkPushNotificationStatus = async () => {
@@ -63,7 +101,6 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
       const updatedStatus = await checkinService.processUserCheckin(userId, userEmail);
       setCheckinStatus(updatedStatus);
       
-      // Show success message
       alert('Check-in completed successfully! Your next check-in is scheduled for ' + 
             new Date(updatedStatus.nextCheckinDue).toLocaleDateString());
     } catch (error) {
@@ -90,6 +127,14 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
     }
   };
 
+  const handleProfessionalContactToggle = (contactId: string, isSelected: boolean) => {
+    const updatedIds = isSelected
+      ? [...privacyPreferences.professionalContactIds, contactId]
+      : privacyPreferences.professionalContactIds.filter(id => id !== contactId);
+    
+    handlePrivacyUpdate({ professionalContactIds: updatedIds });
+  };
+
   const enablePushNotifications = async () => {
     try {
       const initialized = await notificationService.initializePushNotifications();
@@ -114,10 +159,10 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
       alert(`Processed ${results.processed} check-ins:\n` +
             `- Reminders sent: ${results.remindersSent}\n` +
             `- Beneficiary alerts: ${results.beneficiaryAlerts}\n` +
+            `- Professional alerts: ${results.professionalAlerts}\n` +
             `- Inheritance triggered: ${results.inheritanceTriggered}\n` +
             `- Privacy respected: ${results.privacyRespected}`);
       
-      // Reload data
       await loadCheckinData();
     } catch (error) {
       console.error('Error processing overdue check-ins:', error);
@@ -154,6 +199,20 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
 
   const isOverdue = () => {
     return getDaysUntilDue() < 0;
+  };
+
+  const getProfessionalContacts = () => {
+    return availableContacts.filter(contact => contact.isProfessional);
+  };
+
+  const getFamilyContacts = () => {
+    return availableContacts.filter(contact => !contact.isProfessional);
+  };
+
+  const getSelectedProfessionalContacts = () => {
+    return availableContacts.filter(contact => 
+      privacyPreferences.professionalContactIds.includes(contact.id)
+    );
   };
 
   if (!checkinStatus) {
@@ -224,30 +283,39 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
           </div>
         </div>
 
-        {/* Privacy Status Indicator */}
+        {/* Enhanced Privacy Status Indicator */}
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-2 mb-3">
             <Lock className="w-4 h-4 text-purple-600" />
-            <span className="font-medium text-purple-900">Privacy Settings Active</span>
+            <span className="font-medium text-purple-900">Enhanced Privacy Settings Active</span>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm text-purple-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-800">
             <div>
               <span className="font-medium">Beneficiary alerts:</span> 
               <span className="ml-1">{privacyPreferences.alertBeneficiariesWhenOverdue ? 'Enabled' : 'Disabled'}</span>
+            </div>
+            <div>
+              <span className="font-medium">Professional contacts only:</span> 
+              <span className="ml-1">{privacyPreferences.useProfessionalContactsOnly ? 'Yes' : 'No'}</span>
             </div>
             <div>
               <span className="font-medium">Alert type:</span> 
               <span className="ml-1 capitalize">{privacyPreferences.alertType.replace('_', ' ')}</span>
             </div>
             <div>
-              <span className="font-medium">Wellness checks:</span> 
-              <span className="ml-1">{privacyPreferences.allowWellnessChecks ? 'Allowed' : 'Not allowed'}</span>
-            </div>
-            <div>
               <span className="font-medium">Mode:</span> 
               <span className="ml-1">{privacyPreferences.inheritanceOnlyMode ? 'Inheritance-only' : 'Standard'}</span>
             </div>
           </div>
+          
+          {getSelectedProfessionalContacts().length > 0 && (
+            <div className="mt-3 pt-3 border-t border-purple-200">
+              <span className="font-medium text-purple-900">Professional contacts: </span>
+              <span className="text-purple-700">
+                {getSelectedProfessionalContacts().map(c => c.name).join(', ')}
+              </span>
+            </div>
+          )}
         </div>
 
         {checkinStatus.status === 'active' && !isOverdue() && (
@@ -301,12 +369,12 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
         </div>
       </div>
 
-      {/* Privacy Settings Panel */}
+      {/* Enhanced Privacy Settings Panel */}
       {showPrivacySettings && (
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
           <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center space-x-2">
             <Lock className="w-5 h-5 text-purple-600" />
-            <span>Privacy & Beneficiary Alert Settings</span>
+            <span>Enhanced Privacy & Professional Contact Settings</span>
           </h4>
           
           <div className="space-y-6">
@@ -343,8 +411,105 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
               )}
             </div>
 
-            {/* Alert Type Selection */}
+            {/* NEW: Professional Contacts Only Toggle */}
             {privacyPreferences.alertBeneficiariesWhenOverdue && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h5 className="font-medium text-blue-900 flex items-center space-x-2">
+                      <Briefcase className="w-4 h-4" />
+                      <span>Professional Contacts Only</span>
+                    </h5>
+                    <p className="text-sm text-blue-700">
+                      Only alert your lawyers, doctors, or other professionals - not family members
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handlePrivacyUpdate({ 
+                      useProfessionalContactsOnly: !privacyPreferences.useProfessionalContactsOnly 
+                    })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      privacyPreferences.useProfessionalContactsOnly ? 'bg-blue-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      privacyPreferences.useProfessionalContactsOnly ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+                
+                {privacyPreferences.useProfessionalContactsOnly && (
+                  <div className="bg-blue-100 border border-blue-300 rounded p-3 mt-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Professional Mode:</strong> Only your selected professional contacts (lawyers, doctors, etc.) 
+                      will be notified about missed check-ins. Family members will only be contacted for inheritance matters.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Professional Contacts Selection */}
+            {privacyPreferences.alertBeneficiariesWhenOverdue && (
+              <div>
+                <h5 className="font-medium text-slate-900 mb-3 flex items-center space-x-2">
+                  <UserCheck className="w-4 h-4" />
+                  <span>Select Professional Contacts</span>
+                </h5>
+                <p className="text-sm text-slate-600 mb-4">
+                  Choose which professional contacts (lawyers, doctors, etc.) should be notified about missed check-ins
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {getProfessionalContacts().map(contact => (
+                    <label key={contact.id} className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={privacyPreferences.professionalContactIds.includes(contact.id)}
+                        onChange={(e) => handleProfessionalContactToggle(contact.id, e.target.checked)}
+                        className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-slate-900">{contact.name}</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                            {contact.relationship}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1">{contact.email}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {getProfessionalContacts().length === 0 && (
+                  <div className="text-center py-4 text-slate-500">
+                    <p>No professional contacts found. Add lawyers, doctors, or other professionals to your contacts.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Professional Message Customization */}
+            {privacyPreferences.professionalContactIds.length > 0 && (
+              <div>
+                <h5 className="font-medium text-slate-900 mb-2">Custom Message for Professional Contacts</h5>
+                <textarea
+                  value={privacyPreferences.professionalConcernMessage || ''}
+                  onChange={(e) => setPrivacyPreferences(prev => ({ ...prev, professionalConcernMessage: e.target.value }))}
+                  onBlur={() => handlePrivacyUpdate({ professionalConcernMessage: privacyPreferences.professionalConcernMessage })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Add a specific message for your professional contacts (lawyers, doctors, etc.)..."
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  This message will be included in concern notifications to your professional contacts
+                </p>
+              </div>
+            )}
+
+            {/* Alert Type Selection */}
+            {privacyPreferences.alertBeneficiariesWhenOverdue && !privacyPreferences.useProfessionalContactsOnly && (
               <div>
                 <h5 className="font-medium text-slate-900 mb-3">Alert Type</h5>
                 <div className="space-y-3">
@@ -381,8 +546,36 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
               </div>
             )}
 
+            {/* Separate Professional and Family Messaging */}
+            {privacyPreferences.alertBeneficiariesWhenOverdue && 
+             privacyPreferences.professionalContactIds.length > 0 && 
+             !privacyPreferences.useProfessionalContactsOnly && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <h5 className="font-medium text-slate-900">Separate Professional and Family Messages</h5>
+                  <p className="text-sm text-slate-600">
+                    Send different, appropriate messages to professional contacts vs. family members
+                  </p>
+                </div>
+                <button
+                  onClick={() => handlePrivacyUpdate({ 
+                    separateProfessionalAndFamily: !privacyPreferences.separateProfessionalAndFamily 
+                  })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    privacyPreferences.separateProfessionalAndFamily ? 'bg-green-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    privacyPreferences.separateProfessionalAndFamily ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            )}
+
             {/* Wellness Checks Toggle */}
-            {privacyPreferences.alertBeneficiariesWhenOverdue && privacyPreferences.alertType === 'concern' && (
+            {privacyPreferences.alertBeneficiariesWhenOverdue && 
+             privacyPreferences.alertType === 'concern' && 
+             !privacyPreferences.useProfessionalContactsOnly && (
               <div className="flex items-center justify-between">
                 <div>
                   <h5 className="font-medium text-slate-900">Allow Wellness Check Requests</h5>
@@ -519,7 +712,7 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
         </div>
         <p className="text-xs text-slate-500 mt-2">
           This simulates the automated system that runs daily to check for overdue check-ins and send notifications 
-          (respecting privacy preferences).
+          (respecting enhanced privacy preferences including professional contact options).
         </p>
       </div>
 
@@ -532,10 +725,13 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
               <div key={notification.id} className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg">
                 <div className={`p-1 rounded ${
                   notification.type === 'inheritance_triggered' ? 'bg-red-100' : 
+                  notification.type === 'professional_concern' ? 'bg-blue-100' :
                   notification.privacyRespected ? 'bg-purple-100' : 'bg-yellow-100'
                 }`}>
                   {notification.type === 'inheritance_triggered' ? (
                     <Shield className="w-4 h-4 text-red-600" />
+                  ) : notification.type === 'professional_concern' ? (
+                    <Briefcase className="w-4 h-4 text-blue-600" />
                   ) : notification.privacyRespected ? (
                     <Lock className="w-4 h-4 text-purple-600" />
                   ) : (
@@ -563,6 +759,11 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
                         Privacy Respected
                       </span>
                     )}
+                    {notification.recipientType === 'professional' && (
+                      <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                        Professional Contact
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -571,9 +772,9 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
         </div>
       )}
 
-      {/* Information Panel */}
+      {/* Enhanced Information Panel */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h4 className="font-semibold text-blue-900 mb-3">How Privacy-Aware Check-ins Work</h4>
+        <h4 className="font-semibold text-blue-900 mb-3">How Enhanced Privacy-Aware Check-ins Work</h4>
         <div className="space-y-3 text-sm text-blue-800">
           <div className="flex items-start space-x-2">
             <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -581,15 +782,19 @@ const CheckinManager: React.FC<CheckinManagerProps> = ({ userId, userEmail }) =>
           </div>
           <div className="flex items-start space-x-2">
             <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Your privacy preferences control how and when beneficiaries are notified</span>
+            <span>Your enhanced privacy preferences control how and when beneficiaries are notified</span>
+          </div>
+          <div className="flex items-start space-x-2">
+            <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>You can choose to only alert professional contacts (lawyers, doctors) for concerns</span>
           </div>
           <div className="flex items-start space-x-2">
             <EyeOff className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>You can choose to skip wellness checks and go directly to inheritance notifications</span>
+            <span>You can skip wellness checks and go directly to inheritance notifications</span>
           </div>
           <div className="flex items-start space-x-2">
             <Users className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>Beneficiaries are only contacted according to your specific privacy settings</span>
+            <span>Different messages can be sent to professionals vs. family members</span>
           </div>
           <div className="flex items-start space-x-2">
             <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
