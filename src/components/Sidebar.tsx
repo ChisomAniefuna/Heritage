@@ -1,13 +1,14 @@
 import React from 'react';
-import { Home, Wallet, Users, FileText, Clock, Bell } from 'lucide-react';
+import { Home, Shield, Wallet, Users, FileText, Clock, Bell } from 'lucide-react';
 
 interface SidebarProps {
-  currentView: 'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications';
-  setCurrentView: (view: 'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications') => void;
+  currentView: 'dashboard' | 'vaults' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications';
+  setCurrentView: (view: 'dashboard' | 'vaults' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const navItems = [
+    { id: 'vaults', label: 'Vaults', icon: Shield },
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'assets', label: 'Assets', icon: Wallet },
     { id: 'contacts', label: 'Contacts', icon: Users },

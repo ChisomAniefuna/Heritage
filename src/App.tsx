@@ -7,13 +7,14 @@ import ContactsView from './components/ContactsView';
 import DocumentsView from './components/DocumentsView';
 import InheritanceEventsView from './components/InheritanceEventsView';
 import NotificationRulesView from './components/NotificationRulesView';
+import VaultDashboard from './components/VaultDashboard';
 import Homepage from './components/Homepage';
 import PricingPage from './components/PricingPage';
 import { Asset, Contact, Document, InheritanceEvent, NotificationRule } from './types';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'homepage' | 'pricing' | 'app'>('homepage');
-  const [currentView, setCurrentView] = useState<'dashboard' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'vaults' | 'assets' | 'contacts' | 'documents' | 'events' | 'notifications'>('vaults');
   
   const [assets, setAssets] = useState<Asset[]>([
     {
@@ -265,12 +266,12 @@ function App() {
 
   const handleLogin = () => {
     setCurrentPage('app');
-    setCurrentView('dashboard');
+    setCurrentView('vaults');
   };
 
   const handleGoHome = () => {
     setCurrentPage('homepage');
-    setCurrentView('dashboard');
+    setCurrentView('vaults');
   };
 
   const handleViewPricing = () => {
@@ -283,6 +284,8 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
+      case 'vaults':
+        return <VaultDashboard contacts={contacts} />;
       case 'assets':
         return <AssetsView assets={assets} setAssets={setAssets} contacts={contacts} />;
       case 'contacts':
