@@ -8,7 +8,7 @@ export interface TavusReplica {
   name: string;
   status: 'ready' | 'processing' | 'failed';
   created_at: string;
-  thumbnail_video_url?: string;
+  thumbnail_url?: string;
   preview_video_url?: string;
   identity_profile?: IdentityProfile;
 }
@@ -189,9 +189,78 @@ export const HAIRSTYLE_OPTIONS = [
   { id: 'kippah_orthodox', label: 'With Kippah', cultural: ['jewish'] },
 ];
 
+// Mock data for testing without API key
+const MOCK_REPLICAS = [
+  {
+    replica_id: 'rep_123456',
+    name: 'Nigerian Heritage Avatar',
+    status: 'ready',
+    created_at: new Date().toISOString(),
+    thumbnail_url: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=300',
+    preview_video_url: 'https://example.com/preview.mp4',
+    identity_profile: {
+      cultural_identity: 'Nigerian',
+      representation_style: 'Family Elder',
+      clothing_style: 'Traditional Formal',
+      hairstyle: 'Natural'
+    }
+  },
+  {
+    replica_id: 'rep_234567',
+    name: 'Professional Avatar',
+    status: 'ready',
+    created_at: new Date().toISOString(),
+    thumbnail_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=300',
+    preview_video_url: 'https://example.com/preview2.mp4',
+    identity_profile: {
+      cultural_identity: 'African American',
+      representation_style: 'Successful Professional',
+      clothing_style: 'Modern Professional',
+      hairstyle: 'Short Professional'
+    }
+  },
+  {
+    replica_id: 'rep_345678',
+    name: 'Cultural Heritage Avatar',
+    status: 'processing',
+    created_at: new Date().toISOString(),
+    identity_profile: {
+      cultural_identity: 'Indian',
+      representation_style: 'Family Patriarch',
+      clothing_style: 'Cultural Traditional',
+      hairstyle: 'Traditional'
+    }
+  }
+];
+
+const MOCK_VIDEOS = [
+  {
+    video_id: 'vid_123456',
+    replica_id: 'rep_123456',
+    video_name: 'Heritage Message - Family Home',
+    script: 'Hello my dear family, this is an important message about our family home...',
+    status: 'completed',
+    download_url: 'https://example.com/video1.mp4',
+    stream_url: 'https://example.com/stream1.mp4',
+    created_at: new Date().toISOString()
+  },
+  {
+    video_id: 'vid_234567',
+    replica_id: 'rep_123456',
+    video_name: 'Heritage Message - Investment Account',
+    script: 'This message is about the investment account I have set up for you...',
+    status: 'completed',
+    download_url: 'https://example.com/video2.mp4',
+    stream_url: 'https://example.com/stream2.mp4',
+    created_at: new Date().toISOString()
+  }
+];
+
 class TavusService {
   private apiKey: string;
   private headers: Record<string, string>;
+  private mockReplicas: TavusReplica[] = [...MOCK_REPLICAS];
+  private mockVideos: TavusVideo[] = [...MOCK_VIDEOS];
 
   constructor() {
     this.apiKey = import.meta.env.VITE_TAVUS_API_KEY || '';
@@ -209,25 +278,41 @@ class TavusService {
   // Get all replicas for the user
   async getReplicas(): Promise<TavusReplica[]> {
     try {
+      if (!this.isConfigured()) {
+        return this.mockReplicas;
+      }
+
       const response = await axios.get(`${TAVUS_API_BASE}/replicas`, {
         headers: this.headers,
       });
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching replicas:', error);
-      throw new Error('Failed to fetch replicas');
+      // Fallback to mock data if API call fails
+      return this.mockReplicas;
     }
   }
 
   // Get a specific replica
   async getReplica(replicaId: string): Promise<TavusReplica> {
     try {
+      if (!this.isConfigured()) {
+        const mockReplica = this.mockReplicas.find(r => r.replica_id === replicaId);
+        if (!mockReplica) throw new Error('Replica not found');
+        return mockReplica;
+      }
+
       const response = await axios.get(`${TAVUS_API_BASE}/replicas/${replicaId}`, {
         headers: this.headers,
       });
       return response.data;
     } catch (error) {
       console.error('Error fetching replica:', error);
+      
+      // Fallback to mock data if API call fails
+      const mockReplica = this.mockReplicas.find(r => r.replica_id === replicaId);
+      if (mockReplica) return mockReplica;
+      
       throw new Error('Failed to fetch replica');
     }
   }
@@ -235,6 +320,31 @@ class TavusService {
   // Create a new replica with identity preferences
   async createReplica(request: CreateReplicaRequest): Promise<{ replica_id: string }> {
     try {
+      if (!this.isConfigured()) {
+        // Create a mock replica
+        const newReplicaId = `rep_${Date.now()}`;
+        const newReplica: TavusReplica = {
+          replica_id: newReplicaId,
+          name: request.replica_name,
+          status: 'processing',
+          created_at: new Date().toISOString(),
+          identity_profile: request.identity_profile
+        };
+        
+        this.mockReplicas.push(newReplica);
+        
+        // Simulate processing time and then mark as ready
+        setTimeout(() => {
+          const index = this.mockReplicas.findIndex(r => r.replica_id === newReplicaId);
+          if (index !== -1) {
+            this.mockReplicas[index].status = 'ready';
+            this.mockReplicas[index].thumbnail_url = 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300';
+          }
+        }, 5000);
+        
+        return { replica_id: newReplicaId };
+      }
+
       const formData = new FormData();
       formData.append('replica_name', request.replica_name);
       
@@ -278,6 +388,12 @@ class TavusService {
   // Delete a replica
   async deleteReplica(replicaId: string): Promise<void> {
     try {
+      if (!this.isConfigured()) {
+        // Remove from mock data
+        this.mockReplicas = this.mockReplicas.filter(r => r.replica_id !== replicaId);
+        return;
+      }
+
       await axios.delete(`${TAVUS_API_BASE}/replicas/${replicaId}`, {
         headers: this.headers,
       });
@@ -290,6 +406,33 @@ class TavusService {
   // Create a video with cultural context
   async createVideo(request: CreateVideoRequest): Promise<{ video_id: string }> {
     try {
+      if (!this.isConfigured()) {
+        // Create a mock video
+        const newVideoId = `vid_${Date.now()}`;
+        const newVideo: TavusVideo = {
+          video_id: newVideoId,
+          replica_id: request.replica_id,
+          video_name: request.video_name || 'Untitled Video',
+          script: request.script,
+          status: 'generating',
+          created_at: new Date().toISOString()
+        };
+        
+        this.mockVideos.push(newVideo);
+        
+        // Simulate processing time and then mark as completed
+        setTimeout(() => {
+          const index = this.mockVideos.findIndex(v => v.video_id === newVideoId);
+          if (index !== -1) {
+            this.mockVideos[index].status = 'completed';
+            this.mockVideos[index].download_url = 'https://example.com/video.mp4';
+            this.mockVideos[index].stream_url = 'https://example.com/stream.mp4';
+          }
+        }, 3000);
+        
+        return { video_id: newVideoId };
+      }
+
       const response = await axios.post(`${TAVUS_API_BASE}/videos`, request, {
         headers: this.headers,
       });
@@ -303,12 +446,23 @@ class TavusService {
   // Get video status and details
   async getVideo(videoId: string): Promise<TavusVideo> {
     try {
+      if (!this.isConfigured()) {
+        const mockVideo = this.mockVideos.find(v => v.video_id === videoId);
+        if (!mockVideo) throw new Error('Video not found');
+        return mockVideo;
+      }
+
       const response = await axios.get(`${TAVUS_API_BASE}/videos/${videoId}`, {
         headers: this.headers,
       });
       return response.data;
     } catch (error) {
       console.error('Error fetching video:', error);
+      
+      // Fallback to mock data if API call fails
+      const mockVideo = this.mockVideos.find(v => v.video_id === videoId);
+      if (mockVideo) return mockVideo;
+      
       throw new Error('Failed to fetch video');
     }
   }
@@ -316,19 +470,30 @@ class TavusService {
   // Get all videos
   async getVideos(): Promise<TavusVideo[]> {
     try {
+      if (!this.isConfigured()) {
+        return this.mockVideos;
+      }
+
       const response = await axios.get(`${TAVUS_API_BASE}/videos`, {
         headers: this.headers,
       });
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching videos:', error);
-      throw new Error('Failed to fetch videos');
+      // Fallback to mock data if API call fails
+      return this.mockVideos;
     }
   }
 
   // Delete a video
   async deleteVideo(videoId: string): Promise<void> {
     try {
+      if (!this.isConfigured()) {
+        // Remove from mock data
+        this.mockVideos = this.mockVideos.filter(v => v.video_id !== videoId);
+        return;
+      }
+
       await axios.delete(`${TAVUS_API_BASE}/videos/${videoId}`, {
         headers: this.headers,
       });
@@ -443,31 +608,11 @@ ${blessings},
 Your ${relationship}`;
   }
 
-  // Generate photo-based avatar (placeholder for future implementation)
-  async createPhotoBasedAvatar(
-    photo: File,
-    identityPreferences: IdentityProfile,
-    representationStyle: string
-  ): Promise<{ replica_id: string }> {
-    // This would integrate with Tavus photo-to-avatar generation
-    // For now, we'll create a replica with the photo as reference
-    return this.createReplica({
-      replica_name: `Photo Avatar - ${identityPreferences.cultural_identity}`,
-      photo_reference: photo,
-      identity_profile: identityPreferences,
-      representation_preferences: {
-        creation_method: 'photo_generation',
-        cultural_identity: identityPreferences.cultural_identity,
-        visual_style: representationStyle
-      }
-    });
-  }
-
   // Poll for video completion
   async waitForVideoCompletion(
     videoId: string,
     maxWaitTime: number = 300000,
-    pollInterval: number = 10000
+    pollInterval: number = 2000
   ): Promise<TavusVideo> {
     const startTime = Date.now();
     

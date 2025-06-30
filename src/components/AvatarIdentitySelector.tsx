@@ -19,11 +19,11 @@ const AvatarIdentitySelector: React.FC<AvatarIdentitySelectorProps> = ({
   onClose 
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [creationMethod, setCreationMethod] = useState<'video_training' | 'photo_generation' | 'preset_selection'>('video_training');
-  const [selectedCulture, setSelectedCulture] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState('');
-  const [selectedHairstyle, setSelectedHairstyle] = useState('');
+  const [creationMethod, setCreationMethod] = useState<'video_training' | 'photo_generation' | 'preset_selection'>('preset_selection');
+  const [selectedCulture, setSelectedCulture] = useState(CULTURAL_IDENTITIES[0]?.id || '');
+  const [selectedRole, setSelectedRole] = useState(ROLE_REPRESENTATIONS[0]?.id || '');
+  const [selectedStyle, setSelectedStyle] = useState(VISUAL_STYLES[0]?.id || '');
+  const [selectedHairstyle, setSelectedHairstyle] = useState(HAIRSTYLE_OPTIONS[0]?.id || '');
   const [customDescription, setCustomDescription] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -54,18 +54,18 @@ const AvatarIdentitySelector: React.FC<AvatarIdentitySelectorProps> = ({
     const hairstyle = HAIRSTYLE_OPTIONS.find(h => h.id === selectedHairstyle);
 
     const identityProfile: IdentityProfile = {
-      cultural_identity: culture?.label,
-      representation_style: role?.label,
-      clothing_style: style?.label,
-      hairstyle: hairstyle?.label,
+      cultural_identity: culture?.label || CULTURAL_IDENTITIES[0]?.label,
+      representation_style: role?.label || ROLE_REPRESENTATIONS[0]?.label,
+      clothing_style: style?.label || VISUAL_STYLES[0]?.label,
+      hairstyle: hairstyle?.label || HAIRSTYLE_OPTIONS[0]?.label,
       custom_description: customDescription
     };
 
     const preferences: RepresentationPreferences = {
       creation_method: creationMethod,
-      cultural_identity: selectedCulture,
-      role_representation: selectedRole,
-      visual_style: selectedStyle
+      cultural_identity: selectedCulture || CULTURAL_IDENTITIES[0]?.id,
+      role_representation: selectedRole || ROLE_REPRESENTATIONS[0]?.id,
+      visual_style: selectedStyle || VISUAL_STYLES[0]?.id
     };
 
     onSelectionComplete(identityProfile, preferences, photoFile || undefined);

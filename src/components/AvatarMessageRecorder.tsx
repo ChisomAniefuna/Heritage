@@ -51,8 +51,6 @@ const AvatarMessageRecorder: React.FC<AvatarMessageRecorderProps> = ({
 
   const loadReplicas = async () => {
     try {
-      if (!tavusService.isConfigured()) return;
-      
       const replicaList = await tavusService.getReplicas();
       setReplicas(replicaList);
       
@@ -249,11 +247,17 @@ With all my love.`;
           <Video className="w-12 h-12 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900 mb-2">Tavus Not Configured</h3>
           <p className="text-slate-600 mb-4">
-            To use avatar messages, please add your Tavus API key to your environment variables.
+            Using demo mode with mock avatars. In production, add your Tavus API key to your environment variables.
           </p>
           <button
+            onClick={() => setShowIdentitySelector(true)}
+            className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors mb-3"
+          >
+            Create Demo Avatar
+          </button>
+          <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
           >
             Close
           </button>
@@ -411,8 +415,12 @@ With all my love.`;
                             : 'border-slate-200 opacity-50 cursor-not-allowed'
                         }`}
                       >
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
-                          <User className="w-6 h-6 text-purple-600" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center overflow-hidden">
+                          {replica.thumbnail_url ? (
+                            <img src={replica.thumbnail_url} alt={replica.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-6 h-6 text-purple-600" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
